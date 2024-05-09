@@ -15,6 +15,7 @@ const envSchema = z.object({
   GOOGLE_REFRESH_TOKEN: z.string(),
   REDIS_HOST: z.string(),
   CLIENT_URL: z.string(),
+  SERVER_URL: z.string(),
 });
 
 const configParser = envSchema.safeParse({
@@ -29,6 +30,7 @@ const configParser = envSchema.safeParse({
   GOOGLE_REFRESH_TOKEN: process.env.GOOGLE_REFRESH_TOKEN,
   REDIS_HOST: process.env.REDIS_HOST,
   CLIENT_URL: process.env.CLIENT_URL,
+  SERVER_URL: process.env.SERVER_URL,
 });
 
 if (!configParser.success) {

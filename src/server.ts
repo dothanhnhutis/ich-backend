@@ -12,9 +12,7 @@ import configs from "./configs";
 import { StatusCodes } from "http-status-codes";
 import compression from "compression";
 import { createRedisStore } from "./redis";
-import passportGithub from "./passports/passport-github";
-import passportGoogle from "./passports/passport-github";
-import passportLocal from "./passports/passport-local";
+import passport from "./passport";
 
 const SERVER_PORT = 4000;
 const SESSION_MAX_AGE = 1000 * 60 * 60 * 24 * 180;
@@ -58,14 +56,9 @@ export default class AppServer {
         store: redisStore,
       })
     );
-    app.use(passportGithub.initialize());
-    app.use(passportGithub.session());
 
-    app.use(passportGoogle.initialize());
-    app.use(passportGoogle.session());
-
-    app.use(passportLocal.initialize());
-    app.use(passportLocal.session());
+    app.use(passport.initialize());
+    app.use(passport.session());
 
     this.app.use(morgan(configs.NODE_ENV == "production" ? "combined" : "dev"));
     app.use(helmet());
