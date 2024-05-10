@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { StatusCodes } from "http-status-codes";
 
 import passport from "../passport";
 import validateResource from "../middleware/validateResource";
@@ -15,23 +14,35 @@ class AuthRoutes {
   }
   private intializeRoutes() {
     this.routes.get(
+      "/github",
+      passport.authenticate("github", {
+        scope: ["user:email"],
+      })
+    );
+
+    this.routes.get(
+      "/github/callback",
+      passport.authenticate("github", {
+        failureMessage: "Cannot login to github, please try again later!",
+        failureRedirect: "http://localhost:3000/auth/signin/error",
+        successRedirect: "http://localhost:3000/auth/signin/success",
+      })
+    );
+
+    this.routes.get(
       "/google",
       passport.authenticate("google", {
-        scope: [
-          "https://www.googleapis.com/auth/userinfo.profile",
-          "https://www.googleapis.com/auth/userinfo.email",
-        ],
+        scope: ["profile", "email"],
       })
     );
 
     this.routes.get(
       "/google/callback",
-      passport.authenticate("google"),
-      function (req, res) {
-        console.log(req.session);
-        // Successful authentication, redirect home.
-        res.redirect("/api/v1");
-      }
+      passport.authenticate("google", {
+        failureMessage: "Cannot login to google, please try again later!",
+        failureRedirect: "http://localhost:3000/auth/signin/error",
+        successRedirect: "http://localhost:3000/auth/signin/success",
+      })
     );
 
     this.routes.get("/me", function (req, res) {

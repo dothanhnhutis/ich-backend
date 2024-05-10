@@ -9,9 +9,9 @@ datasource db {
 
 model User {
   id             String   @id @default(cuid())
-  email          String   @unique
-  userProviderId String
-  provider       String
+  email          String?  @unique
+  userProviderId String?
+  provider       String?
   username       String
   picture        String?
   password       String?
@@ -22,26 +22,6 @@ model User {
 
   @@unique([provider, userProviderId])
   @@index([userProviderId, provider, email])
-}
-
-model Product {
-  id             String @id @default(cuid())
-  email          String @unique
-  userProviderId String
-  provider       String
-
-  @@unique([provider, userProviderId])
-  @@index([email])
-}
-
-model Tag {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([name, slug])
 }
 
 enum Role {

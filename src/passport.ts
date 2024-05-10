@@ -26,15 +26,33 @@ passport.use(
       profile: any,
       done: any
     ) {
-      // const user = await prisma..findUnique({
-      //   where: {
-      //     provider_userProviderId: {
-      //       provider: "google",
-      //       userProviderId: "115454504953036967354",
-      //     },
-      //   },
-      // });
-      return done(null, { id: 12312 });
+      console.log(profile);
+      let user = await prisma.user.findUnique({
+        where: {
+          provider_userProviderId: {
+            provider: profile.provider,
+            userProviderId: profile.id,
+          },
+        },
+      });
+      if (!user)
+        user = await prisma.user.create({
+          data: {
+            email: profile._json.email,
+            provider: profile.provider,
+            userProviderId: profile._json.sub,
+            username: profile._json.name,
+            picture: profile._json.picture,
+          },
+        });
+      if (user.isBlocked)
+        return done(
+          new BadRequestError(
+            "Your account has been locked please contact the administrator"
+          ),
+          undefined
+        );
+      return done(null, omit(user, ["password", "createdAt", "updatedAt"]));
     }
   )
 );
@@ -52,14 +70,33 @@ passport.use(
       profile: any,
       done: any
     ) {
-      // const user = await prisma.user.findUnique({
-      //   where: {
-      //     AND: { provider: "google", userProviderId: "115454504953036967354" },
-      //   },
-      // });
+      let user = await prisma.user.findUnique({
+        where: {
+          provider_userProviderId: {
+            provider: profile.provider,
+            userProviderId: profile.id,
+          },
+        },
+      });
+      if (!user)
+        user = await prisma.user.create({
+          data: {
+            email: profile.email,
+            provider: profile.provider,
+            userProviderId: profile.id,
+            username: profile._json.name,
+            picture: profile._json.avatar_url,
+          },
+        });
 
-      console.log(profile);
-      return done(null, { id: 12312 });
+      if (user.isBlocked)
+        return done(
+          new BadRequestError(
+            "Your account has been locked please contact the administrator"
+          ),
+          undefined
+        );
+      return done(null, omit(user, ["password", "createdAt", "updatedAt"]));
     }
   )
 );
