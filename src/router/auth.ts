@@ -3,13 +3,14 @@ import { Router } from "express";
 import passport from "../passport";
 import validateResource from "../middleware/validateResource";
 import {
-  sendOTPSchema,
+  resetPassword,
+  sendOTPAndRecoverEmailSchema,
   signinSchema,
   signupSchema,
 } from "../schemas/user.schema";
 import AuthController from "../controllers/auth";
 import configs from "../configs";
-import { rateLimitSentOtp } from "../middleware/rateLimit";
+import { rateLimitRecover, rateLimitSentOtp } from "../middleware/rateLimit";
 
 const SUCCESS_REDIRECT = `${configs.CLIENT_URL}/manager`;
 const FAILURE_REDIRECT = `${configs.CLIENT_URL}/auth/signin/error`;
@@ -75,9 +76,22 @@ class AuthRoutes {
     );
     this.routes.post(
       "/signup/send-otp",
-      // rateLimitSentOtp,
-      validateResource(sendOTPSchema),
+      rateLimitSentOtp,
+      validateResource(sendOTPAndRecoverEmailSchema),
       this.controller.sendOTP
+    );
+
+    this.routes.patch(
+      "/recover",
+      rateLimitRecover,
+      validateResource(sendOTPAndRecoverEmailSchema),
+      this.controller.recover
+    );
+
+    this.routes.patch(
+      "/reset-password/:token",
+      validateResource(resetPassword),
+      this.controller.resetPassword
     );
 
     this.routes.get("/signout", this.controller.signOut);

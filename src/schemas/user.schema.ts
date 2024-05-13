@@ -1,3 +1,4 @@
+import passport from "passport";
 import z from "zod";
 
 export const signinSchema = z.object({
@@ -56,12 +57,38 @@ export const signupSchema = z.object({
     .strict(),
 });
 
-export const sendOTPSchema = z.object({
+export const sendOTPAndRecoverEmailSchema = z.object({
   body: signupSchema.shape.body
     .pick({
       email: true,
     })
     .strict(),
+});
+
+export const resetPassword = z.object({
+  params: z.object({
+    token: z.string(),
+  }),
+  body: z
+    .object({
+      password: z
+        .string({
+          required_error: "Password field is required",
+          invalid_type_error: "Password field must be string",
+        })
+        .min(8, "Password field is too short")
+        .max(40, "Password field can not be longer than 40 characters")
+        .regex(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]*$/,
+          "Password field must include: letters, numbers and special characters"
+        ),
+      confirmPassword: z.string(),
+    })
+    .strict()
+    .refine((data) => data.password === data.confirmPassword, {
+      message: "Passwords don't match",
+      path: ["confirmPassword"],
+    }),
 });
 
 export type User = {
@@ -76,4 +103,7 @@ export type User = {
 };
 export type SignIn = z.infer<typeof signinSchema>;
 export type SignUp = z.infer<typeof signupSchema>;
-export type SendOTP = z.infer<typeof sendOTPSchema>;
+export type SendOTPAndRecoverEmail = z.infer<
+  typeof sendOTPAndRecoverEmailSchema
+>;
+export type ResetPassword = z.infer<typeof resetPassword>;

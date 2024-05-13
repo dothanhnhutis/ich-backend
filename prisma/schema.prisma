@@ -27,7 +27,7 @@ model User {
   username             String
   picture              String?
   password             String?
-  passwordResetToken   String?
+  passwordResetToken   String?   @unique
   passwordResetExpires DateTime?
   role                 Role      @default(CUSTOMER)
   isBlocked            Boolean   @default(false)
@@ -35,7 +35,7 @@ model User {
   updatedAt            DateTime  @updatedAt
 
   @@unique([provider, userProviderId])
-  @@index([userProviderId, provider, email])
+  @@index([userProviderId, provider, email, passwordResetToken])
 }
 
 enum Role {

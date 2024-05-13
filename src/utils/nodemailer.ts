@@ -8,6 +8,7 @@ export interface IEmailLocals {
   appLink: string;
   appIcon: string;
   code?: string;
+  resetLink?: string;
 }
 
 const oAuth2Client = new google.auth.OAuth2(
@@ -24,10 +25,9 @@ export const sendMail = async (
   try {
     const accessToken = (await oAuth2Client.getAccessToken()) as string;
     const smtpTransport = nodemailer.createTransport({
-      service: "gmail",
-      // host: "smtp.gmail.com",
-      // port: 465,
-      // secure: true,
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
       auth: {
         type: "OAuth2",
         user: configs.SENDER_EMAIL,
@@ -41,7 +41,7 @@ export const sendMail = async (
       message: {
         from: `I.C.H App <${configs.SENDER_EMAIL}>`,
       },
-      send: false,
+      send: true,
       preview: false,
       transport: smtpTransport,
       views: {
@@ -57,12 +57,11 @@ export const sendMail = async (
         },
       },
     });
-    const data = await email.send({
+    await email.send({
       template: path.join(__dirname, "..", "/emails", template),
       message: { to: receiver },
       locals,
     });
-    console.log(data);
   } catch (error) {
     console.log(error);
   }

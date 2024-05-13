@@ -26,7 +26,13 @@ passport.use(
       profile: any,
       done: any
     ) {
-      let user = await prisma.user.findUnique({
+      const userCredential = await prisma.user.findUnique({
+        where: {
+          email: profile._json.email,
+        },
+      });
+
+      let userProvider = await prisma.user.findUnique({
         where: {
           provider_userProviderId: {
             provider: profile.provider,
@@ -34,24 +40,40 @@ passport.use(
           },
         },
       });
-      if (!user)
-        user = await prisma.user.create({
-          data: {
-            email: profile._json.email,
-            provider: profile.provider,
-            userProviderId: profile._json.sub,
-            username: profile._json.name,
-            picture: profile._json.picture,
-          },
-        });
-      if (user.isBlocked)
+      if (!userProvider)
+        if (userCredential) {
+          userProvider = await prisma.user.update({
+            where: {
+              id: userCredential.id,
+            },
+            data: {
+              provider: profile.provider,
+              userProviderId: profile._json.sub,
+            },
+          });
+        } else {
+          userProvider = await prisma.user.create({
+            data: {
+              email: profile._json.email,
+              provider: profile.provider,
+              userProviderId: profile._json.sub,
+              username: profile._json.name,
+              picture: profile._json.picture,
+            },
+          });
+        }
+
+      if (userProvider.isBlocked)
         return done(
           new BadRequestError(
             "Your account has been locked please contact the administrator"
           ),
           undefined
         );
-      return done(null, omit(user, ["password", "createdAt", "updatedAt"]));
+      return done(
+        null,
+        omit(userProvider, ["password", "createdAt", "updatedAt"])
+      );
     }
   )
 );
@@ -69,8 +91,13 @@ passport.use(
       profile: any,
       done: any
     ) {
-      console.log(profile);
-      let user = await prisma.user.findUnique({
+      const userCredential = await prisma.user.findUnique({
+        where: {
+          email: profile._json.email,
+        },
+      });
+
+      let userProvider = await prisma.user.findUnique({
         where: {
           provider_userProviderId: {
             provider: profile.provider,
@@ -78,25 +105,42 @@ passport.use(
           },
         },
       });
-      if (!user)
-        user = await prisma.user.create({
-          data: {
-            email: profile._json.email,
-            provider: profile.provider,
-            userProviderId: profile.id,
-            username: profile._json.name,
-            picture: profile._json.avatar_url,
-          },
-        });
 
-      if (user.isBlocked)
+      if (!userProvider) {
+        if (userCredential) {
+          userProvider = await prisma.user.update({
+            where: {
+              id: userCredential.id,
+            },
+            data: {
+              provider: profile.provider,
+              userProviderId: profile.id,
+            },
+          });
+        } else {
+          userProvider = await prisma.user.create({
+            data: {
+              email: profile._json.email,
+              provider: profile.provider,
+              userProviderId: profile.id,
+              username: profile._json.name,
+              picture: profile._json.avatar_url,
+            },
+          });
+        }
+      }
+
+      if (userProvider.isBlocked)
         return done(
           new BadRequestError(
             "Your account has been locked please contact the administrator"
           ),
           undefined
         );
-      return done(null, omit(user, ["password", "createdAt", "updatedAt"]));
+      return done(
+        null,
+        omit(userProvider, ["password", "createdAt", "updatedAt"])
+      );
     }
   )
 );
