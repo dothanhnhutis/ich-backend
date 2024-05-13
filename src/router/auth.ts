@@ -75,9 +75,9 @@ class AuthRoutes {
     );
     this.routes.post(
       "/signup/send-otp",
-      rateLimitSentOtp,
+      // rateLimitSentOtp,
       validateResource(sendOTPSchema),
-      this.controller.sendOtp
+      this.controller.sendOTP
     );
 
     this.routes.get("/signout", this.controller.signOut);

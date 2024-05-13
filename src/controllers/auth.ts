@@ -10,7 +10,7 @@ import { pick } from "lodash";
 import { sendMail } from "../utils/nodemailer";
 
 export default class AuthController {
-  async sendOtp(req: Request<{}, {}, SendOTP["body"]>, res: Response) {
+  async sendOTP(req: Request<{}, {}, SendOTP["body"]>, res: Response) {
     const { email } = req.body;
     const user = await prisma.user.findUnique({
       where: { email: email },
@@ -31,13 +31,6 @@ export default class AuthController {
       ? verifyJWT<string>(otp.code, configs.JWT_SECRET)!
       : generateOTPCode();
 
-    const data = {
-      from: 'I.C.H Verify Email" <gaconght@gmail.com>',
-      to: email,
-      subject: "I.C.H Verify Email",
-      html: `<b>code: ${code}</b>`,
-    };
-
     if (!otp) {
       await prisma.otp.create({
         data: {
@@ -48,14 +41,15 @@ export default class AuthController {
       });
     }
 
-    const isSend = await sendMail("verifyEmail", email, {
+    await sendMail("verifyEmail", email, {
       appIcon: "",
       appLink: "",
-      verifyLink: "http://localhost:3000",
+      code,
     });
-    if (!isSend) throw new BadRequestError("Send email fail");
 
-    return res.send({
+    return res.status(StatusCodes.OK).send({
+      statusCode: StatusCodes.OK,
+      status: "success",
       message: "Send email success",
     });
   }
