@@ -26,7 +26,6 @@ passport.use(
       profile: any,
       done: any
     ) {
-      console.log(profile);
       let user = await prisma.user.findUnique({
         where: {
           provider_userProviderId: {
@@ -70,6 +69,7 @@ passport.use(
       profile: any,
       done: any
     ) {
+      console.log(profile);
       let user = await prisma.user.findUnique({
         where: {
           provider_userProviderId: {
@@ -81,7 +81,7 @@ passport.use(
       if (!user)
         user = await prisma.user.create({
           data: {
-            email: profile.email,
+            email: profile._json.email,
             provider: profile.provider,
             userProviderId: profile.id,
             username: profile._json.name,

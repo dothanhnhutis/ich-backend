@@ -1,6 +1,7 @@
 import { Request } from "express";
 import { rateLimit } from "express-rate-limit";
 import { CreateContact } from "../schemas/contact.schema";
+import { SendOTP, SignUp } from "../schemas/user.schema";
 
 export const rateLimitContact = rateLimit({
   windowMs: 60 * 1000,
@@ -11,7 +12,19 @@ export const rateLimitContact = rateLimit({
     return req.body.requestId;
   },
   handler: (req, res, next, options) => {
-    console.log(options);
-    return res.status(options.statusCode).send(options.message);
+    return res.status(options.statusCode).json({ message: options.message });
+  },
+});
+
+export const rateLimitSentOtp = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 1,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  keyGenerator: function (req: Request<{}, {}, SendOTP["body"]>) {
+    return req.body.email;
+  },
+  handler: (req, res, next, options) => {
+    return res.status(options.statusCode).json({ message: options.message });
   },
 });

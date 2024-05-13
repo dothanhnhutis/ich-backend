@@ -2,8 +2,17 @@ import { Router } from "express";
 
 import passport from "../passport";
 import validateResource from "../middleware/validateResource";
-import { signinSchema } from "../schemas/user.schema";
+import {
+  sendOTPSchema,
+  signinSchema,
+  signupSchema,
+} from "../schemas/user.schema";
 import AuthController from "../controllers/auth";
+import configs from "../configs";
+import { rateLimitSentOtp } from "../middleware/rateLimit";
+
+const SUCCESS_REDIRECT = `${configs.CLIENT_URL}/manager`;
+const FAILURE_REDIRECT = `${configs.CLIENT_URL}/auth/signin/error`;
 
 class AuthRoutes {
   routes = Router();
@@ -24,8 +33,8 @@ class AuthRoutes {
       "/github/callback",
       passport.authenticate("github", {
         failureMessage: "Cannot login to github, please try again later!",
-        failureRedirect: "http://localhost:3000/auth/signin/error",
-        successRedirect: "http://localhost:3000/auth/signin/success",
+        failureRedirect: FAILURE_REDIRECT,
+        successRedirect: SUCCESS_REDIRECT,
       })
     );
 
@@ -40,8 +49,8 @@ class AuthRoutes {
       "/google/callback",
       passport.authenticate("google", {
         failureMessage: "Cannot login to google, please try again later!",
-        failureRedirect: "http://localhost:3000/auth/signin/error",
-        successRedirect: "http://localhost:3000/auth/signin/success",
+        failureRedirect: FAILURE_REDIRECT,
+        successRedirect: SUCCESS_REDIRECT,
       })
     );
 
@@ -58,6 +67,19 @@ class AuthRoutes {
       passport.authenticate("local"),
       this.controller.signIn
     );
+
+    this.routes.post(
+      "/signup",
+      validateResource(signupSchema),
+      this.controller.signUp
+    );
+    this.routes.post(
+      "/signup/send-otp",
+      rateLimitSentOtp,
+      validateResource(sendOTPSchema),
+      this.controller.sendOtp
+    );
+
     this.routes.get("/signout", this.controller.signOut);
   }
 }

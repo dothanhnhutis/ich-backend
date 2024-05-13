@@ -16,6 +16,8 @@ const envSchema = z.object({
   REDIS_HOST: z.string(),
   CLIENT_URL: z.string(),
   SERVER_URL: z.string(),
+  JWT_SECRET: z.string(),
+  SENDER_EMAIL: z.string(),
 });
 
 const configParser = envSchema.safeParse({
@@ -31,6 +33,8 @@ const configParser = envSchema.safeParse({
   REDIS_HOST: process.env.REDIS_HOST,
   CLIENT_URL: process.env.CLIENT_URL,
   SERVER_URL: process.env.SERVER_URL,
+  JWT_SECRET: process.env.JWT_SECRET,
+  SENDER_EMAIL: process.env.SENDER_EMAIL,
 });
 
 if (!configParser.success) {

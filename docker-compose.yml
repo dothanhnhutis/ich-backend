@@ -1,5 +1,3 @@
-version: "3.5"
-
 services:
   postgres:
     container_name: postgres_container
@@ -24,7 +22,7 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - ./docker-volumes/cache:/data
+      - ./docker_volumes/cache:/data
     networks:
       - app-network
 

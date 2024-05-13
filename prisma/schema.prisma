@@ -7,18 +7,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Otp {
+  id        String   @id @default(cuid())
+  code      String
+  verified  Boolean  @default(false)
+  email     String
+  expireAt  DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([code, email, verified])
+}
+
 model User {
-  id             String   @id @default(cuid())
-  email          String?  @unique
-  userProviderId String?
-  provider       String?
-  username       String
-  picture        String?
-  password       String?
-  role           Role     @default(CUSTOMER)
-  isBlocked      Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id                   String    @id @default(cuid())
+  email                String?   @unique
+  userProviderId       String?
+  provider             String?   @default("credential")
+  username             String
+  picture              String?
+  password             String?
+  passwordResetToken   String?
+  passwordResetExpires DateTime?
+  role                 Role      @default(CUSTOMER)
+  isBlocked            Boolean   @default(false)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   @@unique([provider, userProviderId])
   @@index([userProviderId, provider, email])
