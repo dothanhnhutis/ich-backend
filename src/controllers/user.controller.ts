@@ -22,9 +22,14 @@ export default class UserController {
       where: {
         passwordResetToken: token,
       },
+      select: {
+        id: true,
+        passwordResetToken: true,
+        passwordResetExpires: true,
+      },
     });
     if (!user) throw new NotFoundError();
-
+    console.log(user);
     return res.status(StatusCodes.OK).json({
       statusCode: StatusCodes.OK,
       status: "success",
