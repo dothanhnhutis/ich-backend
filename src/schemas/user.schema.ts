@@ -1,4 +1,3 @@
-import passport from "passport";
 import z from "zod";
 
 export const signinSchema = z.object({
@@ -91,15 +90,38 @@ export const resetPassword = z.object({
     }),
 });
 
+export const changePassword = z.object({
+  body: z
+    .object({
+      currentPassword: z.string(),
+      newPassword: z
+        .string({
+          required_error: "Password field is required",
+          invalid_type_error: "Password field must be string",
+        })
+        .min(8, "Password field is too short")
+        .max(40, "Password field can not be longer than 40 characters")
+        .regex(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]*$/,
+          "Password field must include: letters, numbers and special characters"
+        ),
+    })
+    .strict(),
+});
+
 export type User = {
   id: string;
-  email: string;
-  userProviderId: string;
+  email: string | null;
+  userProviderId: string | null;
   provider: string;
   username: string;
-  picture: string;
-  role: string;
+  picture: string | null;
+  passwordResetToken: string | null;
+  passwordResetExpires: string | null;
+  role: UserRole;
   isBlocked: string;
+  createdAt: string;
+  updatedAt: string;
 };
 export type SignIn = z.infer<typeof signinSchema>;
 export type SignUp = z.infer<typeof signupSchema>;
@@ -107,3 +129,14 @@ export type SendOTPAndRecoverEmail = z.infer<
   typeof sendOTPAndRecoverEmailSchema
 >;
 export type ResetPassword = z.infer<typeof resetPassword>;
+export type ChangePassword = z.infer<typeof changePassword>;
+export type UserReq = {
+  id: string;
+  email: string | null;
+  username: string;
+  role: UserRole;
+  picture: string | null;
+  isBlocked: string;
+};
+
+export type UserRole = "ADMIN" | "MANAGER" | "SALER" | "WRITER" | "CUSTOMER";

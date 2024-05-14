@@ -3,14 +3,16 @@ import { Router } from "express";
 import passport from "../passport";
 import validateResource from "../middleware/validateResource";
 import {
+  changePassword,
   resetPassword,
   sendOTPAndRecoverEmailSchema,
   signinSchema,
   signupSchema,
 } from "../schemas/user.schema";
-import AuthController from "../controllers/auth";
+import AuthController from "../controllers/auth.controller";
 import configs from "../configs";
 import { rateLimitRecover, rateLimitSentOtp } from "../middleware/rateLimit";
+import { requiredAuth } from "../middleware/requiredAuth";
 
 const SUCCESS_REDIRECT = `${configs.CLIENT_URL}/manager`;
 const FAILURE_REDIRECT = `${configs.CLIENT_URL}/auth/signin/error`;
@@ -55,13 +57,6 @@ class AuthRoutes {
       })
     );
 
-    this.routes.get("/me", function (req, res) {
-      console.log(req.session);
-      console.log(req.isAuthenticated());
-      console.log(req.user);
-      res.send("oke");
-    });
-
     this.routes.post(
       "/signin",
       validateResource(signinSchema),
@@ -92,6 +87,13 @@ class AuthRoutes {
       "/reset-password/:token",
       validateResource(resetPassword),
       this.controller.resetPassword
+    );
+
+    this.routes.patch(
+      "/change-password",
+      requiredAuth,
+      validateResource(changePassword),
+      this.controller.changPassword
     );
 
     this.routes.get("/signout", this.controller.signOut);

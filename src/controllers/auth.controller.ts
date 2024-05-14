@@ -6,6 +6,7 @@ import { BadRequestError } from "../error-handler";
 import { signJWT, verifyJWT } from "../utils/jwt";
 import { generateOTPCode, hashData } from "../utils/helper";
 import {
+  ChangePassword,
   ResetPassword,
   SendOTPAndRecoverEmail,
   SignUp,
@@ -37,7 +38,8 @@ export default class AuthController {
         passwordResetExpires: date,
       },
     });
-    const resetLink = `${configs.CLIENT_URL}/auth/recover?token=${randomCharacters}`;
+    console.log(randomCharacters);
+    const resetLink = `${configs.CLIENT_URL}/auth/reset-password?token=${randomCharacters}`;
     await sendMail("recover", email, {
       appIcon: "",
       appLink: "",
@@ -81,6 +83,16 @@ export default class AuthController {
       message: "Reset password success",
       metadata: { user: pick(newUser, ["id", "email", "role", "isBlocked"]) },
     });
+  }
+
+  async changPassword(
+    req: Request<{}, {}, ChangePassword["body"]>,
+    res: Response
+  ) {
+    const { currentPassword, newPassword } = req.body;
+    const {} = req.user!;
+
+    res.status(StatusCodes.OK).json(req.user);
   }
 
   async sendOTP(

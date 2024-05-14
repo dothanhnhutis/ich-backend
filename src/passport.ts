@@ -6,7 +6,7 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import prisma from "./utils/db";
 import { BadRequestError } from "./error-handler";
 import configs from "./configs";
-import { omit } from "lodash";
+import { omit, pick } from "lodash";
 import { compareData } from "./utils/helper";
 import { User } from "./schemas/user.schema";
 
@@ -70,10 +70,7 @@ passport.use(
           ),
           undefined
         );
-      return done(
-        null,
-        omit(userProvider, ["password", "createdAt", "updatedAt"])
-      );
+      return done(null, userProvider.id);
     }
   )
 );
@@ -137,10 +134,7 @@ passport.use(
           ),
           undefined
         );
-      return done(
-        null,
-        omit(userProvider, ["password", "createdAt", "updatedAt"])
-      );
+      return done(null, userProvider.id);
     }
   )
 );
@@ -173,21 +167,30 @@ passport.use(
           undefined
         );
 
-      return done(null, omit(user, ["password", "createdAt", "updatedAt"]));
+      return done(null, user.id);
     }
   )
 );
 
-passport.serializeUser<Omit<User, "password" | "createdAt" | "updatedAt">>(
-  (user: any, done) => {
-    done(null, user);
-  }
-);
+passport.serializeUser<string>((id: any, done) => {
+  console.log("serializeUser");
+  done(null, id);
+});
 
-passport.deserializeUser<Omit<User, "password" | "createdAt" | "updatedAt">>(
-  async (user, done) => {
-    done(null, user);
-  }
-);
+passport.deserializeUser<string>(async (id, done) => {
+  console.log("deserializeUser");
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      email: true,
+      username: true,
+      role: true,
+      picture: true,
+      isBlocked: true,
+    },
+  });
+  done(null, user);
+});
 
 export default passport;
