@@ -96,7 +96,7 @@ class AuthRoutes {
       this.controller.changPassword
     );
 
-    this.routes.get("/signout", this.controller.signOut);
+    this.routes.delete("/signout", this.controller.signOut);
   }
 }
 export default new AuthRoutes().routes;
