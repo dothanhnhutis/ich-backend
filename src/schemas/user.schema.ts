@@ -1,3 +1,4 @@
+import { query } from "express";
 import z from "zod";
 
 export const signinSchema = z.object({
@@ -46,12 +47,12 @@ export const signupSchema = z.object({
           /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]*$/,
           "Password field must include: letters, numbers and special characters"
         ),
-      code: z
-        .string({
-          required_error: "Code field is required",
-          invalid_type_error: "Code field must be string",
-        })
-        .length(6, "Code field include 6 characters"),
+      // code: z
+      //   .string({
+      //     required_error: "Code field is required",
+      //     invalid_type_error: "Code field must be string",
+      //   })
+      //   .length(6, "Code field include 6 characters"),
     })
     .strict(),
 });
@@ -62,6 +63,12 @@ export const sendOTPAndRecoverEmailSchema = z.object({
       email: true,
     })
     .strict(),
+});
+
+export const verifyEmailSchema = z.object({
+  params: z.object({
+    token: z.string(),
+  }),
 });
 
 export const resetPassword = z.object({
@@ -105,8 +112,17 @@ export const changePassword = z.object({
           /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]*$/,
           "Password field must include: letters, numbers and special characters"
         ),
+      confirmNewPassword: z.string(),
     })
-    .strict(),
+    .strict()
+    .refine((data) => data.newPassword === data.confirmNewPassword, {
+      message: "Confirm new password don't match",
+      path: ["confirmNewPassword"],
+    })
+    .refine((data) => data.currentPassword === data.newPassword, {
+      message: "The new password and old password must not be the same",
+      path: ["confirmNewPassword"],
+    }),
 });
 
 export type User = {
@@ -128,14 +144,17 @@ export type SignUp = z.infer<typeof signupSchema>;
 export type SendOTPAndRecoverEmail = z.infer<
   typeof sendOTPAndRecoverEmailSchema
 >;
+
+export type VerifyEmail = z.infer<typeof verifyEmailSchema>;
 export type ResetPassword = z.infer<typeof resetPassword>;
 export type ChangePassword = z.infer<typeof changePassword>;
-export type UserReq = {
+export type CurrentUser = {
   id: string;
   email: string | null;
   username: string;
   role: UserRole;
   picture: string | null;
+  emailVerified: boolean;
   isBlocked: string;
 };
 

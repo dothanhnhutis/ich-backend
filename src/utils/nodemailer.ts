@@ -7,7 +7,7 @@ import path from "path";
 export interface IEmailLocals {
   appLink: string;
   appIcon: string;
-  code?: string;
+  verificationLink?: string;
   resetLink?: string;
 }
 

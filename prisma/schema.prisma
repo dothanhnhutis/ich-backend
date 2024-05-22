@@ -7,35 +7,46 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Otp {
-  id        String   @id @default(cuid())
-  code      String
-  verified  Boolean  @default(false)
-  email     String
-  expireAt  DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// model Otp {
+//   id        String   @id @default(cuid())
+//   code      String
+//   verified  Boolean  @default(false)
+//   email     String
+//   expireAt  DateTime
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
 
-  @@index([code, email, verified])
+//   @@index([code, email, verified])
+// }
+
+model LinkProvider {
+  id         String @id @default(cuid())
+  providerId String
+  provider   String @default("credential")
+  userId     String
+  user       User   @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerId])
+  @@index([userId, provider, providerId])
 }
 
 model User {
-  id                   String    @id @default(cuid())
-  email                String?   @unique
-  userProviderId       String?
-  provider             String    @default("credential")
-  username             String
-  picture              String?
-  password             String?
-  passwordResetToken   String?   @unique
-  passwordResetExpires DateTime?
-  role                 Role      @default(CUSTOMER)
-  isBlocked            Boolean   @default(false)
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  id                     String         @id @default(cuid())
+  email                  String         @unique
+  emailVerified          Boolean        @default(false)
+  emailVerificationToken String         @unique
+  username               String
+  picture                String?
+  password               String?
+  passwordResetToken     String?        @unique
+  passwordResetExpires   DateTime?
+  role                   Role           @default(CUSTOMER)
+  isBlocked              Boolean        @default(false)
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+  linkProvider           LinkProvider[]
 
-  @@unique([provider, userProviderId])
-  @@index([userProviderId, provider, email, passwordResetToken])
+  @@index([email, emailVerificationToken, passwordResetToken])
 }
 
 enum Role {

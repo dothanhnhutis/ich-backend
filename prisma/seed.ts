@@ -6,6 +6,8 @@ async function seed() {
   await prisma.user.create({
     data: {
       email: "gaconght001@gmail.com",
+      emailVerified: true,
+      emailVerificationToken: "",
       password: hashData("@Abc123123"),
       username: "gaconght001",
     },

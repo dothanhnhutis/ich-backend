@@ -8,6 +8,7 @@ import {
   sendOTPAndRecoverEmailSchema,
   signinSchema,
   signupSchema,
+  verifyEmailSchema,
 } from "../schemas/user.schema";
 import AuthController from "../controllers/auth.controller";
 import configs from "../configs";
@@ -69,11 +70,18 @@ class AuthRoutes {
       validateResource(signupSchema),
       this.controller.signUp
     );
-    this.routes.post(
-      "/signup/send-otp",
-      rateLimitSentOtp,
-      validateResource(sendOTPAndRecoverEmailSchema),
-      this.controller.sendOTP
+
+    // this.routes.post(
+    //   "/signup/send-otp",
+    //   rateLimitSentOtp,
+    //   validateResource(sendOTPAndRecoverEmailSchema),
+    //   this.controller.sendOTP
+    // );
+
+    this.routes.get(
+      "/confirm_email/:token",
+      validateResource(verifyEmailSchema),
+      this.controller.verifyEmail
     );
 
     this.routes.patch(

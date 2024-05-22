@@ -6,14 +6,7 @@ import { BadRequestError, NotFoundError } from "../error-handler";
 export default class UserController {
   async currentUser(req: Request, res: Response) {
     // console.log(req.session);
-    res.status(StatusCodes.OK).send({
-      statusCode: StatusCodes.OK,
-      status: "success",
-      message: "Get user success",
-      metadata: {
-        user: req.user,
-      },
-    });
+    res.status(StatusCodes.OK).send(req.user);
   }
 
   async getUserByToken(req: Request<{ token: string }>, res: Response) {
@@ -30,13 +23,6 @@ export default class UserController {
     });
     if (!user) throw new NotFoundError();
     console.log(user);
-    return res.status(StatusCodes.OK).json({
-      statusCode: StatusCodes.OK,
-      status: "success",
-      message: "Get user success",
-      metadata: {
-        user,
-      },
-    });
+    return res.status(StatusCodes.OK).json(user);
   }
 }

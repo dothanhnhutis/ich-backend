@@ -5,7 +5,8 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: changeme
-      # PGDATA: /data/postgres
+      POSTGRES_DB: pgdb
+      # POSTGRES_DB: /data/postgres
     volumes:
       - ./docker_volumes/postgres:/var/lib/postgresql
     ports:

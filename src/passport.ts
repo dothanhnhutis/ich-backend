@@ -1,17 +1,16 @@
 import passport from "passport";
+import crypto from "crypto";
 import { Strategy as LocalStrategy } from "passport-local";
-import { Strategy as GithubStrategy } from "passport-github2";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
 import prisma from "./utils/db";
 import { BadRequestError } from "./error-handler";
 import configs from "./configs";
-import { omit, pick } from "lodash";
 import { compareData } from "./utils/helper";
-import { User } from "./schemas/user.schema";
+import { pick } from "lodash";
+import { CurrentUser } from "./schemas/user.schema";
 
 const GoogleCallbackURL = `${configs.SERVER_URL}/api/v1/auth/google/callback`;
-const GitHubCallbackURL = `${configs.SERVER_URL}/api/v1/auth/github/callback`;
 
 passport.use(
   new GoogleStrategy(
@@ -26,115 +25,77 @@ passport.use(
       profile: any,
       done: any
     ) {
-      const userCredential = await prisma.user.findUnique({
+      let userProvider = await prisma.linkProvider.findUnique({
         where: {
-          email: profile._json.email,
-        },
-      });
-
-      let userProvider = await prisma.user.findUnique({
-        where: {
-          provider_userProviderId: {
+          provider_providerId: {
             provider: profile.provider,
-            userProviderId: profile.id,
+            providerId: profile.id,
+          },
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              username: true,
+              role: true,
+              picture: true,
+              emailVerified: true,
+              isBlocked: true,
+            },
           },
         },
       });
-      if (!userProvider)
-        if (userCredential) {
-          userProvider = await prisma.user.update({
-            where: {
-              id: userCredential.id,
-            },
-            data: {
-              provider: profile.provider,
-              userProviderId: profile._json.sub,
-            },
-          });
-        } else {
-          userProvider = await prisma.user.create({
-            data: {
-              email: profile._json.email,
-              provider: profile.provider,
-              userProviderId: profile._json.sub,
-              username: profile._json.name,
-              picture: profile._json.picture,
-            },
-          });
-        }
-
-      if (userProvider.isBlocked)
-        return done(
-          new BadRequestError(
-            "Your account has been locked please contact the administrator"
-          ),
-          undefined
-        );
-      return done(null, userProvider.id);
-    }
-  )
-);
-
-passport.use(
-  new GithubStrategy(
-    {
-      clientID: configs.GITHUB_CLIENT_ID,
-      clientSecret: configs.GITHUB_CLIENT_SECRET,
-      callbackURL: GitHubCallbackURL,
-    },
-    async function (
-      accessToken: any,
-      refreshToken: any,
-      profile: any,
-      done: any
-    ) {
-      const userCredential = await prisma.user.findUnique({
-        where: {
-          email: profile._json.email,
-        },
-      });
-
-      let userProvider = await prisma.user.findUnique({
-        where: {
-          provider_userProviderId: {
-            provider: profile.provider,
-            userProviderId: profile.id,
-          },
-        },
-      });
+      console.log(userProvider);
 
       if (!userProvider) {
-        if (userCredential) {
-          userProvider = await prisma.user.update({
-            where: {
-              id: userCredential.id,
+        const randomBytes: Buffer = await Promise.resolve(
+          crypto.randomBytes(20)
+        );
+        const randomCharacters: string = randomBytes.toString("hex");
+        const user = await prisma.user.create({
+          data: {
+            email: profile._json.email,
+            emailVerificationToken: randomCharacters,
+            emailVerified: true,
+            username: profile._json.name,
+            picture: profile._json.picture,
+          },
+        });
+        userProvider = await prisma.linkProvider.create({
+          data: {
+            provider: profile.provider,
+            providerId: profile._json.sub,
+            user: {
+              connect: {
+                id: user.id,
+              },
             },
-            data: {
-              provider: profile.provider,
-              userProviderId: profile.id,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                username: true,
+                role: true,
+                picture: true,
+                emailVerified: true,
+                isBlocked: true,
+              },
             },
-          });
-        } else {
-          userProvider = await prisma.user.create({
-            data: {
-              email: profile._json.email,
-              provider: profile.provider,
-              userProviderId: profile.id,
-              username: profile._json.name,
-              picture: profile._json.avatar_url,
-            },
-          });
-        }
+          },
+        });
       }
 
-      if (userProvider.isBlocked)
+      if (userProvider.user.isBlocked)
         return done(
           new BadRequestError(
             "Your account has been locked please contact the administrator"
           ),
           undefined
         );
-      return done(null, userProvider.id);
+      return done(null, userProvider.user);
     }
   )
 );
@@ -167,21 +128,31 @@ passport.use(
           undefined
         );
 
-      return done(null, user.id);
+      return done(
+        null,
+        pick(user, [
+          "id",
+          "email",
+          "username",
+          "role",
+          "picture",
+          "emailVerified",
+          "isBlocked",
+        ])
+      );
     }
   )
 );
 
-passport.serializeUser<string>((id: any, done) => {
-  console.log("serializeUser");
-  done(null, id);
+passport.serializeUser<CurrentUser>((user: any, done) => {
+  done(null, user);
 });
 
-passport.deserializeUser<string>(async (id, done) => {
-  console.log("deserializeUser");
+passport.deserializeUser<CurrentUser>(async (user, done) => {
+  console.log(user);
   try {
-    const user = await prisma.user.findUnique({
-      where: { id },
+    const userExist = await prisma.user.findUnique({
+      where: { id: user.id },
       select: {
         id: true,
         email: true,
@@ -189,9 +160,10 @@ passport.deserializeUser<string>(async (id, done) => {
         role: true,
         picture: true,
         isBlocked: true,
+        emailVerified: true,
       },
     });
-    done(null, user);
+    done(null, userExist);
   } catch (error) {
     done(error, undefined);
   }

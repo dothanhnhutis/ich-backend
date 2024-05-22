@@ -2,14 +2,15 @@ import crypto from "crypto";
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import prisma from "../utils/db";
-import { BadRequestError } from "../error-handler";
+import { BadRequestError, NotFoundError } from "../error-handler";
 import { signJWT, verifyJWT } from "../utils/jwt";
-import { generateOTPCode, hashData } from "../utils/helper";
+import { compareData, generateOTPCode, hashData } from "../utils/helper";
 import {
   ChangePassword,
   ResetPassword,
   SendOTPAndRecoverEmail,
   SignUp,
+  VerifyEmail,
 } from "../schemas/user.schema";
 import configs from "../configs";
 import { pick } from "lodash";
@@ -38,7 +39,6 @@ export default class AuthController {
         passwordResetExpires: date,
       },
     });
-    console.log(randomCharacters);
     const resetLink = `${configs.CLIENT_URL}/auth/reset-password?token=${randomCharacters}`;
     await sendMail("recover", email, {
       appIcon: "",
@@ -47,8 +47,6 @@ export default class AuthController {
     });
 
     return res.status(StatusCodes.OK).send({
-      statusCode: StatusCodes.OK,
-      status: "success",
       message: "Send email success",
     });
   }
@@ -78,10 +76,7 @@ export default class AuthController {
       },
     });
     return res.status(StatusCodes.OK).send({
-      statusCode: StatusCodes.OK,
-      status: "success",
       message: "Reset password success",
-      metadata: { user: pick(newUser, ["id", "email", "role", "isBlocked"]) },
     });
   }
 
@@ -90,78 +85,59 @@ export default class AuthController {
     res: Response
   ) {
     const { currentPassword, newPassword } = req.body;
-    const {} = req.user!;
+    const { id } = req.user! as { id: string };
+    const userExist = await prisma.user.findUnique({ where: { id } });
+    if (!userExist) throw new BadRequestError("User not exist");
+    const isValidOldPassword = await compareData(
+      userExist.password!,
+      currentPassword
+    );
 
-    res.status(StatusCodes.OK).json(req.user);
-  }
+    if (!isValidOldPassword)
+      throw new BadRequestError("Old password is incorrect");
 
-  async sendOTP(
-    req: Request<{}, {}, SendOTPAndRecoverEmail["body"]>,
-    res: Response
-  ) {
-    const { email } = req.body;
-    const user = await prisma.user.findUnique({
-      where: { email: email },
-    });
-    if (user) throw new BadRequestError("User already exists");
-    const otp = await prisma.otp.findFirst({
+    await prisma.user.update({
       where: {
-        email,
-        verified: false,
-        AND: [
-          { expireAt: { gte: new Date(Date.now()) } },
-          { expireAt: { lte: new Date(Date.now() + 1000 * 60 * 5) } },
-        ],
+        id: userExist.id,
+      },
+      data: {
+        password: hashData(newPassword),
       },
     });
 
-    let code = otp
-      ? verifyJWT<string>(otp.code, configs.JWT_SECRET)!
-      : generateOTPCode();
+    return res.status(StatusCodes.OK).json({
+      message: "Edit password success",
+    });
+  }
 
-    if (!otp) {
-      await prisma.otp.create({
+  async verifyEmail(req: Request<VerifyEmail["params"]>, res: Response) {
+    const { token } = req.params;
+    const user = await prisma.user.findUnique({
+      where: { emailVerificationToken: token },
+    });
+    if (!user) throw new NotFoundError();
+    if (!user.emailVerified)
+      await prisma.user.update({
+        where: { emailVerificationToken: token },
         data: {
-          email,
-          code: signJWT(code, configs.JWT_SECRET),
-          expireAt: new Date(Date.now() + 1000 * 60 * 5).toISOString(),
+          emailVerified: true,
         },
       });
-    }
-
-    await sendMail("verifyEmail", email, {
-      appIcon: "",
-      appLink: "",
-      code,
-    });
-
-    return res.status(StatusCodes.OK).send({
-      statusCode: StatusCodes.OK,
-      status: "success",
-      message: "Send email success",
+    return res.status(StatusCodes.OK).json({
+      message: "verify email success",
     });
   }
 
   async signUp(req: Request<{}, {}, SignUp["body"]>, res: Response) {
-    const { email, password, code, username } = req.body;
+    const { email, password, username } = req.body;
     const user = await prisma.user.findUnique({
       where: { email },
     });
     if (user) throw new BadRequestError("User already exists");
-    const date: Date = new Date();
-    date.setMinutes(date.getMinutes() + 1);
-    const otp = await prisma.otp.findFirst({
-      where: {
-        verified: false,
-        email,
-        AND: [
-          { expireAt: { gte: new Date() } },
-          { expireAt: { lte: new Date(Date.now() + 1000 * 60 * 5) } },
-        ],
-      },
-    });
-    if (!otp || code != verifyJWT<string>(otp.code, configs.JWT_SECRET))
-      throw new BadRequestError("Email verification code has expired");
+
+    const randomBytes: Buffer = await Promise.resolve(crypto.randomBytes(20));
+    const randomCharacters: string = randomBytes.toString("hex");
+    const verificationLink = `${configs.CLIENT_URL}/confirm_email?v_token=${randomCharacters}`;
 
     const hash = hashData(password);
     const newUser = await prisma.user.create({
@@ -169,30 +145,31 @@ export default class AuthController {
         email: email,
         password: hash,
         username,
+        emailVerificationToken: randomCharacters,
       },
     });
-    await prisma.otp.update({
-      where: { id: otp.id },
-      data: {
-        verified: true,
-      },
+
+    await sendMail("verifyEmail", email, {
+      appIcon: "",
+      appLink: "",
+      verificationLink,
     });
-    return res.status(StatusCodes.CREATED).send({
-      statusCode: StatusCodes.CREATED,
-      status: "success",
+
+    console.log({
       message: "Sign up success",
-      metadata: { user: pick(newUser, ["id", "email", "role", "isBlocked"]) },
+      user: pick(newUser, ["id", "email", "role", "isBlocked"]),
+    });
+
+    return res.status(StatusCodes.CREATED).send({
+      message: "Sign up success",
+      user: pick(newUser, ["id", "email", "role", "isBlocked"]),
     });
   }
 
   async signIn(req: Request, res: Response) {
     res.status(StatusCodes.OK).json({
-      statusCode: StatusCodes.OK,
-      status: "success",
       message: "Sign in success",
-      metadata: {
-        user: req.user,
-      },
+      user: req.user,
     });
   }
 
