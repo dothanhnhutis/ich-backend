@@ -1,7 +1,7 @@
 import { Request } from "express";
 import { rateLimit } from "express-rate-limit";
 import { CreateContact } from "../schemas/contact.schema";
-import { SendOTPAndRecoverEmail } from "../schemas/user.schema";
+import { CurrentUser, SendRecoverEmail } from "../schemas/user.schema";
 
 export const rateLimitContact = rateLimit({
   windowMs: 60 * 1000,
@@ -16,14 +16,12 @@ export const rateLimitContact = rateLimit({
   },
 });
 
-export const rateLimitSentOtp = rateLimit({
+export const rateLimitRecover = rateLimit({
   windowMs: 60 * 1000,
   limit: 1,
   standardHeaders: "draft-7",
   legacyHeaders: false,
-  keyGenerator: function (
-    req: Request<{}, {}, SendOTPAndRecoverEmail["body"]>
-  ) {
+  keyGenerator: function (req: Request<{}, {}, SendRecoverEmail["body"]>) {
     return req.body.email;
   },
   handler: (req, res, next, options) => {
@@ -31,15 +29,14 @@ export const rateLimitSentOtp = rateLimit({
   },
 });
 
-export const rateLimitRecover = rateLimit({
+export const rateLimitSendEmail = rateLimit({
   windowMs: 60 * 1000,
   limit: 1,
   standardHeaders: "draft-7",
   legacyHeaders: false,
-  keyGenerator: function (
-    req: Request<{}, {}, SendOTPAndRecoverEmail["body"]>
-  ) {
-    return req.body.email;
+  keyGenerator: function (req: Request) {
+    const currentUser = req.user! as CurrentUser;
+    return currentUser.id;
   },
   handler: (req, res, next, options) => {
     return res.status(options.statusCode).json({ message: options.message });

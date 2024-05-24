@@ -7,8 +7,9 @@ import { signJWT, verifyJWT } from "../utils/jwt";
 import { compareData, generateOTPCode, hashData } from "../utils/helper";
 import {
   ChangePassword,
+  CurrentUser,
   ResetPassword,
-  SendOTPAndRecoverEmail,
+  SendRecoverEmail,
   SignUp,
   VerifyEmail,
 } from "../schemas/user.schema";
@@ -17,10 +18,7 @@ import { pick } from "lodash";
 import { sendMail } from "../utils/nodemailer";
 
 export default class AuthController {
-  async recover(
-    req: Request<{}, {}, SendOTPAndRecoverEmail["body"]>,
-    res: Response
-  ) {
+  async recover(req: Request<{}, {}, SendRecoverEmail["body"]>, res: Response) {
     const { email } = req.body;
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -137,7 +135,7 @@ export default class AuthController {
 
     const randomBytes: Buffer = await Promise.resolve(crypto.randomBytes(20));
     const randomCharacters: string = randomBytes.toString("hex");
-    const verificationLink = `${configs.CLIENT_URL}/confirm_email?v_token=${randomCharacters}`;
+    const verificationLink = `${configs.CLIENT_URL}/confirm-email?v_token=${randomCharacters}`;
 
     const hash = hashData(password);
     const newUser = await prisma.user.create({
@@ -153,11 +151,6 @@ export default class AuthController {
       appIcon: "",
       appLink: "",
       verificationLink,
-    });
-
-    console.log({
-      message: "Sign up success",
-      user: pick(newUser, ["id", "email", "role", "isBlocked"]),
     });
 
     return res.status(StatusCodes.CREATED).send({

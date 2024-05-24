@@ -57,7 +57,7 @@ export const signupSchema = z.object({
     .strict(),
 });
 
-export const sendOTPAndRecoverEmailSchema = z.object({
+export const sendRecoverEmailSchema = z.object({
   body: signupSchema.shape.body
     .pick({
       email: true,
@@ -141,9 +141,7 @@ export type User = {
 };
 export type SignIn = z.infer<typeof signinSchema>;
 export type SignUp = z.infer<typeof signupSchema>;
-export type SendOTPAndRecoverEmail = z.infer<
-  typeof sendOTPAndRecoverEmailSchema
->;
+export type SendRecoverEmail = z.infer<typeof sendRecoverEmailSchema>;
 
 export type VerifyEmail = z.infer<typeof verifyEmailSchema>;
 export type ResetPassword = z.infer<typeof resetPassword>;

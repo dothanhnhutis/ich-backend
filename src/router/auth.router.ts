@@ -5,14 +5,14 @@ import validateResource from "../middleware/validateResource";
 import {
   changePassword,
   resetPassword,
-  sendOTPAndRecoverEmailSchema,
+  sendRecoverEmailSchema,
   signinSchema,
   signupSchema,
   verifyEmailSchema,
 } from "../schemas/user.schema";
 import AuthController from "../controllers/auth.controller";
 import configs from "../configs";
-import { rateLimitRecover, rateLimitSentOtp } from "../middleware/rateLimit";
+import { rateLimitRecover } from "../middleware/rateLimit";
 import { requiredAuth } from "../middleware/requiredAuth";
 
 const SUCCESS_REDIRECT = `${configs.CLIENT_URL}/manager`;
@@ -71,15 +71,8 @@ class AuthRoutes {
       this.controller.signUp
     );
 
-    // this.routes.post(
-    //   "/signup/send-otp",
-    //   rateLimitSentOtp,
-    //   validateResource(sendOTPAndRecoverEmailSchema),
-    //   this.controller.sendOTP
-    // );
-
     this.routes.get(
-      "/confirm_email/:token",
+      "/confirm-email/:token",
       validateResource(verifyEmailSchema),
       this.controller.verifyEmail
     );
@@ -87,7 +80,7 @@ class AuthRoutes {
     this.routes.patch(
       "/recover",
       rateLimitRecover,
-      validateResource(sendOTPAndRecoverEmailSchema),
+      validateResource(sendRecoverEmailSchema),
       this.controller.recover
     );
 
