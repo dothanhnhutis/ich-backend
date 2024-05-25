@@ -1,9 +1,8 @@
 import "express";
+import { CurrentUser } from "./schemas/user.schema";
 
 declare global {
   namespace Express {
-    interface User {
-      username: string;
-    }
+    interface User extends CurrentUser {}
   }
 }

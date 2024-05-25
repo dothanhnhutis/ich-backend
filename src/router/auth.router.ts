@@ -90,13 +90,6 @@ class AuthRoutes {
       this.controller.resetPassword
     );
 
-    this.routes.patch(
-      "/change-password",
-      requiredAuth,
-      validateResource(changePassword),
-      this.controller.changPassword
-    );
-
     this.routes.delete("/signout", this.controller.signOut);
   }
 }

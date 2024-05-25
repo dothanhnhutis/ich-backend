@@ -46,7 +46,6 @@ passport.use(
           },
         },
       });
-      console.log(userProvider);
 
       if (!userProvider) {
         const randomBytes: Buffer = await Promise.resolve(
@@ -144,12 +143,11 @@ passport.use(
   )
 );
 
-passport.serializeUser<CurrentUser>((user: any, done) => {
+passport.serializeUser<CurrentUser>((user, done) => {
   done(null, user);
 });
 
 passport.deserializeUser<CurrentUser>(async (user, done) => {
-  console.log(user);
   try {
     const userExist = await prisma.user.findUnique({
       where: { id: user.id },

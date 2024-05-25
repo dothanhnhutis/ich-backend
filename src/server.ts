@@ -1,4 +1,5 @@
 import "express-async-errors";
+import "./types";
 import http from "http";
 import express, { Request, Response, NextFunction, Application } from "express";
 import cors from "cors";

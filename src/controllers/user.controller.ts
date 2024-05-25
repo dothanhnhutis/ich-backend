@@ -3,9 +3,14 @@ import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import prisma from "../utils/db";
 import { BadRequestError, NotFoundError } from "../error-handler";
-import { CurrentUser } from "../schemas/user.schema";
+import {
+  ChangePassword,
+  CurrentUser,
+  EditProfile,
+} from "../schemas/user.schema";
 import { sendMail } from "../utils/nodemailer";
 import configs from "../configs";
+import { compareData, hashData } from "../utils/helper";
 
 export default class UserController {
   async currentUser(req: Request, res: Response) {
@@ -26,12 +31,14 @@ export default class UserController {
       },
     });
     if (!user) throw new NotFoundError();
-    console.log(user);
+
     return res.status(StatusCodes.OK).json(user);
   }
 
   async sendVerifyEmail(req: Request, res: Response) {
     const currentUser = req.user! as CurrentUser;
+    if (currentUser.emailVerified)
+      throw new BadRequestError("Email has been verified");
     const user = await prisma.user.findUnique({
       where: {
         id: currentUser.id,
@@ -57,8 +64,16 @@ export default class UserController {
 
   async changeEmail(req: Request<{}, {}, { email: string }>, res: Response) {
     const { email } = req.body;
+    const currentUser = req.user!;
+    if (currentUser.emailVerified)
+      throw new BadRequestError("Email has been verified");
+    const user = await prisma.user.findUnique({
+      where: {
+        id: currentUser.id,
+      },
+    });
+    if (!user) throw new BadRequestError("User not exist");
 
-    const currentUser = req.user! as CurrentUser;
     const checkNewEmail = await prisma.user.findUnique({
       where: {
         email,
@@ -66,12 +81,6 @@ export default class UserController {
     });
     if (checkNewEmail) throw new BadRequestError("Email already exists");
 
-    const user = await prisma.user.findUnique({
-      where: {
-        id: currentUser.id,
-      },
-    });
-    if (!user) throw new BadRequestError("User not exist");
     await prisma.user.update({
       where: {
         id: user.id,
@@ -90,12 +99,62 @@ export default class UserController {
       appLink: "",
       verificationLink,
     });
+
     return res.status(StatusCodes.OK).json({
       message: "Updated and resending e-mail...",
     });
   }
 
-  async edit(req: Request, res: Response) {
-    res.status(StatusCodes.OK).json({ message: "sadsad" });
+  async edit(req: Request<{}, {}, EditProfile["body"]>, res: Response) {
+    const currentUser = req.user!;
+    const data = req.body;
+    await prisma.user.update({
+      where: {
+        id: currentUser.id,
+      },
+      data,
+    });
+
+    // if (data.isBlocked && data.isBlocked == true) {
+    //   req.logout(function (err) {
+    //     if (err) {
+    //       console.log(err);
+    //       throw new BadRequestError("Sign out error");
+    //     }
+    //   });
+    //   res.clearCookie("session");
+
+    // }
+    return res.status(StatusCodes.OK).json({ message: "Edit profile success" });
+  }
+
+  async changPassword(
+    req: Request<{}, {}, ChangePassword["body"]>,
+    res: Response
+  ) {
+    const { currentPassword, newPassword } = req.body;
+    const { id } = req.user! as { id: string };
+    const userExist = await prisma.user.findUnique({ where: { id } });
+    if (!userExist) throw new BadRequestError("User not exist");
+    const isValidOldPassword = await compareData(
+      userExist.password!,
+      currentPassword
+    );
+
+    if (!isValidOldPassword)
+      throw new BadRequestError("Old password is incorrect");
+
+    await prisma.user.update({
+      where: {
+        id: userExist.id,
+      },
+      data: {
+        password: hashData(newPassword),
+      },
+    });
+
+    return res.status(StatusCodes.OK).json({
+      message: "Edit password success",
+    });
   }
 }

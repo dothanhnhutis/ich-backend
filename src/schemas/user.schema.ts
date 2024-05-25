@@ -125,20 +125,17 @@ export const changePassword = z.object({
     }),
 });
 
-export type User = {
-  id: string;
-  email: string | null;
-  userProviderId: string | null;
-  provider: string;
-  username: string;
-  picture: string | null;
-  passwordResetToken: string | null;
-  passwordResetExpires: string | null;
-  role: UserRole;
-  isBlocked: string;
-  createdAt: string;
-  updatedAt: string;
-};
+export const editProfileSchema = z.object({
+  body: z
+    .object({
+      username: z.string(),
+      picture: z.string(),
+      // isBlocked: z.boolean(),
+    })
+    .partial()
+    .strip(),
+});
+
 export type SignIn = z.infer<typeof signinSchema>;
 export type SignUp = z.infer<typeof signupSchema>;
 export type SendRecoverEmail = z.infer<typeof sendRecoverEmailSchema>;
@@ -146,14 +143,16 @@ export type SendRecoverEmail = z.infer<typeof sendRecoverEmailSchema>;
 export type VerifyEmail = z.infer<typeof verifyEmailSchema>;
 export type ResetPassword = z.infer<typeof resetPassword>;
 export type ChangePassword = z.infer<typeof changePassword>;
-export type CurrentUser = {
+export type EditProfile = z.infer<typeof editProfileSchema>;
+
+export interface CurrentUser {
   id: string;
   email: string | null;
   username: string;
   role: UserRole;
   picture: string | null;
   emailVerified: boolean;
-  isBlocked: string;
-};
+  isBlocked: boolean;
+}
 
 export type UserRole = "ADMIN" | "MANAGER" | "SALER" | "WRITER" | "CUSTOMER";

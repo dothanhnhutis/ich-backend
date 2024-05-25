@@ -63,7 +63,7 @@ export default class AuthController {
     });
     if (!existingUser) throw new BadRequestError("Reset token has expired");
     const hash = hashData(password);
-    const newUser = await prisma.user.update({
+    await prisma.user.update({
       where: {
         id: existingUser.id,
       },
@@ -75,36 +75,6 @@ export default class AuthController {
     });
     return res.status(StatusCodes.OK).send({
       message: "Reset password success",
-    });
-  }
-
-  async changPassword(
-    req: Request<{}, {}, ChangePassword["body"]>,
-    res: Response
-  ) {
-    const { currentPassword, newPassword } = req.body;
-    const { id } = req.user! as { id: string };
-    const userExist = await prisma.user.findUnique({ where: { id } });
-    if (!userExist) throw new BadRequestError("User not exist");
-    const isValidOldPassword = await compareData(
-      userExist.password!,
-      currentPassword
-    );
-
-    if (!isValidOldPassword)
-      throw new BadRequestError("Old password is incorrect");
-
-    await prisma.user.update({
-      where: {
-        id: userExist.id,
-      },
-      data: {
-        password: hashData(newPassword),
-      },
-    });
-
-    return res.status(StatusCodes.OK).json({
-      message: "Edit password success",
     });
   }
 
@@ -175,8 +145,6 @@ export default class AuthController {
     });
     res.clearCookie("session");
     res.status(StatusCodes.OK).json({
-      statusCode: StatusCodes.OK,
-      status: "success",
       message: "Sign out successful",
     });
   }
