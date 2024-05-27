@@ -91,6 +91,7 @@ class AuthRoutes {
     );
 
     this.routes.delete("/signout", this.controller.signOut);
+    this.routes.post("/enable");
   }
 }
 export default new AuthRoutes().routes;

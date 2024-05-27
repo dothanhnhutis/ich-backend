@@ -12,7 +12,7 @@ import helmet from "helmet";
 import configs from "./configs";
 import { StatusCodes } from "http-status-codes";
 import compression from "compression";
-import { createRedisStore } from "./redis";
+import { createRedisStore, initRedis } from "./redis";
 import passport from "./passport";
 
 const SERVER_PORT = 4000;
@@ -42,7 +42,7 @@ export default class AppServer {
   private securityMiddleware(app: Application): void {
     app.set("trust proxy", 1);
     const redisStore = createRedisStore();
-
+    initRedis();
     this.app.use(
       session({
         name: configs.SESSION_KEY_NAME,

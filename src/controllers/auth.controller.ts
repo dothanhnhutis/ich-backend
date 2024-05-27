@@ -137,15 +137,54 @@ export default class AuthController {
   }
 
   async signOut(req: Request, res: Response) {
+    console.log(req.user);
     req.logout(function (err) {
       if (err) {
-        console.log(err);
         throw new BadRequestError("Sign out error");
       }
     });
-    res.clearCookie("session");
-    res.status(StatusCodes.OK).json({
-      message: "Sign out successful",
+
+    res
+      .status(StatusCodes.OK)
+      .clearCookie("session")
+      .json({
+        message: "Sign out successful",
+      })
+      .end();
+  }
+
+  async emailEnableActive(
+    req: Request<{}, {}, { email: string }>,
+    res: Response
+  ) {
+    const { email } = req.body;
+    const userExist = await prisma.user.findUnique({ where: { email } });
+    if (!userExist) throw new BadRequestError("User not exist");
+
+    const randomBytes: Buffer = await Promise.resolve(crypto.randomBytes(20));
+    const randomCharacters: string = randomBytes.toString("hex");
+    const verificationLink = `${configs.CLIENT_URL}/auth/enable?v_token=${randomCharacters}`;
+    const date: Date = new Date();
+    date.setHours(date.getHours() + 24);
+
+    await prisma.user.update({
+      where: {
+        id: userExist.id,
+      },
+      data: {
+        activeAccountToken: randomCharacters,
+        activeAccountExpires: date,
+      },
+    });
+
+    if (!userExist.emailVerified)
+      await sendMail("verifyEmail", email, {
+        appIcon: "",
+        appLink: "",
+        verificationLink,
+      });
+    return res.status(StatusCodes.OK).json({
+      message: "Edit password success",
     });
   }
 }

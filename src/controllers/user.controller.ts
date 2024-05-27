@@ -157,4 +157,32 @@ export default class UserController {
       message: "Edit password success",
     });
   }
+
+  async disableActive(req: Request, res: Response) {
+    const { id } = req.user! as { id: string };
+    const userExist = await prisma.user.findUnique({ where: { id } });
+    if (!userExist) throw new BadRequestError("User not exist");
+    if (!userExist.isBlocked)
+      await prisma.user.update({
+        where: {
+          id,
+        },
+        data: {
+          isBlocked: true,
+        },
+      });
+
+    req.logout(function (err) {
+      if (err) {
+        throw new BadRequestError("Sign out error");
+      }
+    });
+    res.cookie("session", "", { maxAge: 0 });
+    res
+      .status(StatusCodes.OK)
+      .json({
+        message: "Diable account successful",
+      })
+      .end();
+  }
 }

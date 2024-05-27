@@ -53,3 +53,11 @@ export class PermissionError extends CustomError {
     super("Permission denied");
   }
 }
+
+export class RedisError extends CustomError {
+  statusCode: number = StatusCodes.INTERNAL_SERVER_ERROR;
+
+  constructor(public message: string, statusCode: number) {
+    super(message);
+  }
+}
