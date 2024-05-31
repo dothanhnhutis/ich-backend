@@ -5,9 +5,6 @@ export const requiredAuth: Middleware = (req, res, next) => {
   if (!req.isAuthenticated()) {
     throw new NotAuthorizedError();
   }
-  if (!req.user || req.user.isBlocked) {
-    throw new PermissionError();
-  }
   next();
 };
 

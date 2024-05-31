@@ -7,9 +7,9 @@ import prisma from "./utils/db";
 import { BadRequestError } from "./error-handler";
 import configs from "./configs";
 import { compareData } from "./utils/helper";
-import { pick } from "lodash";
-import { CurrentUser } from "./schemas/user.schema";
-
+import userAgentParse, { IDevice } from "ua-parser-js";
+import { redisClient } from "./redis/connection";
+import { UserRole } from "./schemas/user.schema";
 const GoogleCallbackURL = `${configs.SERVER_URL}/api/v1/auth/google/callback`;
 
 passport.use(
@@ -18,13 +18,10 @@ passport.use(
       clientID: configs.GOOGLE_CLIENT_ID,
       clientSecret: configs.GOOGLE_CLIENT_SECRET,
       callbackURL: GoogleCallbackURL,
+      passReqToCallback: true,
     },
-    async function (
-      accessToken: any,
-      refreshToken: any,
-      profile: any,
-      done: any
-    ) {
+    async function (req, accessToken, refreshToken, profile, done) {
+      const userAgent = userAgentParse(req.headers["user-agent"]);
       let userProvider = await prisma.linkProvider.findUnique({
         where: {
           provider_providerId: {
@@ -36,12 +33,9 @@ passport.use(
           user: {
             select: {
               id: true,
-              email: true,
-              username: true,
               role: true,
-              picture: true,
-              emailVerified: true,
               isBlocked: true,
+              emailVerified: true,
             },
           },
         },
@@ -54,10 +48,10 @@ passport.use(
         const randomCharacters: string = randomBytes.toString("hex");
         const user = await prisma.user.create({
           data: {
-            email: profile._json.email,
+            email: profile._json.email!,
             emailVerificationToken: randomCharacters,
             emailVerified: true,
-            username: profile._json.name,
+            username: profile._json.name!,
             picture: profile._json.picture,
           },
         });
@@ -75,12 +69,9 @@ passport.use(
             user: {
               select: {
                 id: true,
-                email: true,
-                username: true,
                 role: true,
-                picture: true,
-                emailVerified: true,
                 isBlocked: true,
+                emailVerified: true,
               },
             },
           },
@@ -94,15 +85,24 @@ passport.use(
           ),
           undefined
         );
-      return done(null, userProvider.user);
+      return done(null, {
+        ...userProvider.user,
+        userAgent: userAgent.ua,
+        device: userAgent.device,
+      });
     }
   )
 );
 
 passport.use(
   new LocalStrategy(
-    { usernameField: "email", passwordField: "password" },
-    async function (email, password, done) {
+    {
+      usernameField: "email",
+      passwordField: "password",
+      passReqToCallback: true,
+    },
+    async function (req, email, password, done) {
+      const userAgent = userAgentParse(req.headers["user-agent"]);
       const user = await prisma.user.findUnique({
         where: {
           email,
@@ -113,6 +113,13 @@ passport.use(
           new BadRequestError("Invalid email or password"),
           undefined
         );
+
+      if (!user.password || !(await compareData(user.password, password)))
+        return done(
+          new BadRequestError("Invalid email or password"),
+          undefined
+        );
+
       if (user.isBlocked)
         return done(
           new BadRequestError(
@@ -121,47 +128,43 @@ passport.use(
           undefined
         );
 
-      if (!user.password || !(await compareData(user.password, password)))
-        return done(
-          new BadRequestError("Invalid email or password"),
-          undefined
-        );
-
-      return done(
-        null,
-        pick(user, [
-          "id",
-          "email",
-          "username",
-          "role",
-          "picture",
-          "emailVerified",
-          "isBlocked",
-        ])
-      );
+      return done(null, {
+        id: user.id,
+        role: user.role,
+        isBlocked: user.isBlocked,
+        emailVerified: user.emailVerified,
+        userAgent: userAgent.ua,
+        device: userAgent.device,
+      });
     }
   )
 );
 
-passport.serializeUser<CurrentUser>((user, done) => {
+export interface ISessionDataStore {
+  id: string;
+  role: UserRole;
+  emailVerified: boolean;
+  isBlocked: boolean;
+  userAgent: string;
+  device: IDevice;
+}
+
+passport.serializeUser<any>((user, done) => {
   done(null, user);
 });
 
-passport.deserializeUser<CurrentUser>(async (user, done) => {
+passport.deserializeUser<any>(async (user, done) => {
   try {
     const userExist = await prisma.user.findUnique({
       where: { id: user.id },
       select: {
         id: true,
-        email: true,
-        username: true,
         role: true,
-        picture: true,
         isBlocked: true,
         emailVerified: true,
       },
     });
-    done(null, userExist);
+    done(null, { ...user, ...userExist });
   } catch (error) {
     done(error, undefined);
   }

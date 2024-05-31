@@ -1,8 +1,8 @@
 import "express";
-import { CurrentUser } from "./schemas/user.schema";
+import { ISessionDataStore } from "./passport";
 
 declare global {
   namespace Express {
-    interface User extends CurrentUser {}
+    interface User extends ISessionDataStore {}
   }
 }

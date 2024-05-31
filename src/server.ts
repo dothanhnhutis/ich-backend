@@ -4,7 +4,6 @@ import http from "http";
 import express, { Request, Response, NextFunction, Application } from "express";
 import cors from "cors";
 import morgan from "morgan";
-import session from "express-session";
 import routes from "./router";
 import { IErrorResponse, NotFoundError } from "./error-handler";
 import { CustomError } from "./error-handler";
@@ -12,11 +11,13 @@ import helmet from "helmet";
 import configs from "./configs";
 import { StatusCodes } from "http-status-codes";
 import compression from "compression";
-import { createRedisStore, initRedis } from "./redis";
 import passport from "./passport";
+import { initRedis, redisClient } from "./redis/connection";
+import session from "express-session";
+import RedisStore from "connect-redis";
 
 const SERVER_PORT = 4000;
-const SESSION_MAX_AGE = 1000 * 60 * 60 * 24 * 180;
+const SESSION_MAX_AGE = 1000 * 60 * 60 * 24 * 90;
 
 export default class AppServer {
   private app: Application;
@@ -41,23 +42,29 @@ export default class AppServer {
 
   private securityMiddleware(app: Application): void {
     app.set("trust proxy", 1);
-    const redisStore = createRedisStore();
     initRedis();
-    this.app.use(
+
+    app.use(
       session({
+        store: new RedisStore({
+          client: redisClient,
+          prefix: "sess:",
+          disableTouch: false,
+        }),
         name: configs.SESSION_KEY_NAME,
-        resave: false,
-        saveUninitialized: false,
         secret: configs.SESSION_SECRET,
+        saveUninitialized: false,
+        resave: false,
         cookie: {
           httpOnly: true,
           secure: configs.NODE_ENV == "production",
           maxAge: SESSION_MAX_AGE,
         },
-        store: redisStore,
+        genid: (req) => {
+          return `${req.user?.id}:${Math.random().toString(36).substring(2)}`;
+        },
       })
     );
-
     app.use(passport.initialize());
     app.use(passport.session());
 
@@ -73,9 +80,6 @@ export default class AppServer {
   }
 
   private routesMiddleware(app: Application): void {
-    // middleware
-    // this.app.use(deserializeUser);
-    // routes
     this.app.use("/api/v1", routes);
   }
 
@@ -93,6 +97,9 @@ export default class AppServer {
         next: NextFunction
       ) => {
         if (error instanceof CustomError) {
+          if (error.statusCode == StatusCodes.UNAUTHORIZED) {
+            res.clearCookie("session");
+          }
           return res.status(error.statusCode).json(error.serializeErrors());
         }
         console.log(error);

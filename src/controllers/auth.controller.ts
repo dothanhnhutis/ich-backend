@@ -3,11 +3,8 @@ import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import prisma from "../utils/db";
 import { BadRequestError, NotFoundError } from "../error-handler";
-import { signJWT, verifyJWT } from "../utils/jwt";
-import { compareData, generateOTPCode, hashData } from "../utils/helper";
+import { hashData } from "../utils/helper";
 import {
-  ChangePassword,
-  CurrentUser,
   ResetPassword,
   SendRecoverEmail,
   SignUp,
@@ -137,19 +134,18 @@ export default class AuthController {
   }
 
   async signOut(req: Request, res: Response) {
-    console.log(req.user);
     req.logout(function (err) {
       if (err) {
         throw new BadRequestError("Sign out error");
       }
     });
-
     res
       .status(StatusCodes.OK)
       .clearCookie("session")
       .json({
         message: "Sign out successful",
       })
+
       .end();
   }
 

@@ -130,7 +130,8 @@ export const editProfileSchema = z.object({
     .object({
       username: z.string(),
       picture: z.string(),
-      // isBlocked: z.boolean(),
+      phone: z.string(),
+      address: z.string(),
     })
     .partial()
     .strip(),
@@ -144,15 +145,5 @@ export type VerifyEmail = z.infer<typeof verifyEmailSchema>;
 export type ResetPassword = z.infer<typeof resetPassword>;
 export type ChangePassword = z.infer<typeof changePassword>;
 export type EditProfile = z.infer<typeof editProfileSchema>;
-
-export interface CurrentUser {
-  id: string;
-  email: string | null;
-  username: string;
-  role: UserRole;
-  picture: string | null;
-  emailVerified: boolean;
-  isBlocked: boolean;
-}
 
 export type UserRole = "ADMIN" | "MANAGER" | "SALER" | "WRITER" | "CUSTOMER";

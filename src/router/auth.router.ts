@@ -1,9 +1,7 @@
 import { Router } from "express";
-
 import passport from "../passport";
 import validateResource from "../middleware/validateResource";
 import {
-  changePassword,
   resetPassword,
   sendRecoverEmailSchema,
   signinSchema,
@@ -13,9 +11,8 @@ import {
 import AuthController from "../controllers/auth.controller";
 import configs from "../configs";
 import { rateLimitRecover } from "../middleware/rateLimit";
-import { requiredAuth } from "../middleware/requiredAuth";
 
-const SUCCESS_REDIRECT = `${configs.CLIENT_URL}/manager`;
+const SUCCESS_REDIRECT = `${configs.CLIENT_URL}/user/profile`;
 const FAILURE_REDIRECT = `${configs.CLIENT_URL}/auth/signin/error`;
 
 class AuthRoutes {
@@ -26,22 +23,6 @@ class AuthRoutes {
     this.intializeRoutes();
   }
   private intializeRoutes() {
-    this.routes.get(
-      "/github",
-      passport.authenticate("github", {
-        scope: ["user:email"],
-      })
-    );
-
-    this.routes.get(
-      "/github/callback",
-      passport.authenticate("github", {
-        failureMessage: "Cannot login to github, please try again later!",
-        failureRedirect: FAILURE_REDIRECT,
-        successRedirect: SUCCESS_REDIRECT,
-      })
-    );
-
     this.routes.get(
       "/google",
       passport.authenticate("google", {

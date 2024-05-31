@@ -1,7 +1,8 @@
 import { Request } from "express";
 import { rateLimit } from "express-rate-limit";
 import { CreateContact } from "../schemas/contact.schema";
-import { CurrentUser, SendRecoverEmail } from "../schemas/user.schema";
+import { SendRecoverEmail } from "../schemas/user.schema";
+import { ISessionDataStore } from "../passport";
 
 export const rateLimitContact = rateLimit({
   windowMs: 60 * 1000,
@@ -35,7 +36,7 @@ export const rateLimitSendEmail = rateLimit({
   standardHeaders: "draft-7",
   legacyHeaders: false,
   keyGenerator: function (req: Request) {
-    const currentUser = req.user! as CurrentUser;
+    const currentUser = req.user! as ISessionDataStore;
     return currentUser.id;
   },
   handler: (req, res, next, options) => {

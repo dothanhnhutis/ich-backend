@@ -3,19 +3,27 @@ import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import prisma from "../utils/db";
 import { BadRequestError, NotFoundError } from "../error-handler";
-import {
-  ChangePassword,
-  CurrentUser,
-  EditProfile,
-} from "../schemas/user.schema";
+import { ChangePassword, EditProfile } from "../schemas/user.schema";
 import { sendMail } from "../utils/nodemailer";
 import configs from "../configs";
 import { compareData, hashData } from "../utils/helper";
+import { omit } from "lodash";
 
 export default class UserController {
   async currentUser(req: Request, res: Response) {
-    // console.log(req.session);
-    res.status(StatusCodes.OK).send(req.user);
+    const user = await prisma.user.findUnique({
+      where: { id: req.user?.id },
+    });
+    res
+      .status(StatusCodes.OK)
+      .json(
+        omit(user, [
+          "password",
+          "emailVerificationToken",
+          "activeAccountToken",
+          "activeAccountExpires",
+        ])
+      );
   }
 
   async getUserByToken(req: Request<{ token: string }>, res: Response) {
@@ -36,7 +44,7 @@ export default class UserController {
   }
 
   async sendVerifyEmail(req: Request, res: Response) {
-    const currentUser = req.user! as CurrentUser;
+    const currentUser = req.user!;
     if (currentUser.emailVerified)
       throw new BadRequestError("Email has been verified");
     const user = await prisma.user.findUnique({
@@ -114,17 +122,6 @@ export default class UserController {
       },
       data,
     });
-
-    // if (data.isBlocked && data.isBlocked == true) {
-    //   req.logout(function (err) {
-    //     if (err) {
-    //       console.log(err);
-    //       throw new BadRequestError("Sign out error");
-    //     }
-    //   });
-    //   res.clearCookie("session");
-
-    // }
     return res.status(StatusCodes.OK).json({ message: "Edit profile success" });
   }
 

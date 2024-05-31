@@ -48,7 +48,7 @@ class UserRoutes {
       validateResource(changePassword),
       this.controller.changPassword
     );
-    this.routes.patch("/disable", requiredAuth, this.controller.disableActive);
+    this.routes.delete("/disable", requiredAuth, this.controller.disableActive);
   }
 }
 
