@@ -35,7 +35,6 @@ model User {
   userRoles     UserRole[]
   mfa           MFA?
   accounts      Account[]
-  displays      Display[]
   alarms        Alarm[]
   timers        Timer[]
 }
@@ -107,15 +106,16 @@ model Location {
 }
 
 model Room {
-  id           String        @id @default(uuid())
-  name         String
-  locationId   String
-  location     Location      @relation(fields: [locationId], references: [id])
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  roomDisplays RoomDisplay[]
-  roomAlarms   RoomAlarm[]
-  roomTimers   RoomTimer[]
+  id                String             @id @default(uuid())
+  name              String
+  locationId        String
+  location          Location           @relation(fields: [locationId], references: [id])
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  // roomDisplays      RoomDisplay[]
+  roomAlarms        RoomAlarm[]
+  roomTimers        RoomTimer[]
+  displayOrderRooms DisplayOrderRoom[]
 
   @@unique([locationId, name])
   @@index([locationId, name])
@@ -148,53 +148,62 @@ enum DisplayOrderStatus {
 model DisplayOrderProduct {
   id             String       @id @default(uuid())
   productName    String
-  imae           String
-  priority       Int          @default(0)
+  image          String
   unit           ProductUnit
   quantity       Int
   pack_spec      Int
   displayOrderId String
-  displayOrder   DisplayOrder @relation(fields: [displayOrderId], references: [id])
+  displayOrder   DisplayOrder @relation(fields: [displayOrderId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model DisplayOrder {
-  id           String                @id @default(uuid())
-  customerName String
-  priority     Int                   @default(0)
-  status       DisplayOrderStatus    @default(TO_DO)
-  products     DisplayOrderProduct[]
-  address      String?
-  phoneNumber  String?
-  createdAt    DateTime              @default(now())
-  updatedAt    DateTime              @updatedAt
+  id                String                @id @default(uuid())
+  customerName      String
+  priority          Int                   @default(0)
+  status            DisplayOrderStatus    @default(TO_DO)
+  products          DisplayOrderProduct[]
+  address           String?
+  phoneNumber       String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  displayOrderRooms DisplayOrderRoom[]
+}
+
+model DisplayOrderRoom {
+  roomId         String
+  displayOrderId String
+  room           Room         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  displayOrder   DisplayOrder @relation(fields: [displayOrderId], references: [id], onDelete: Cascade)
+
+  @@id([roomId, displayOrderId])
 }
 
 // TV Display
-model RoomDisplay {
-  roomId     String
-  displayId  String
-  department Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  display    Display @relation(fields: [displayId], references: [id], onDelete: Cascade)
+// model RoomDisplay {
+//   roomId    String
+//   displayId String
+//   room      Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+//   display   Display @relation(fields: [displayId], references: [id], onDelete: Cascade)
 
-  @@id([roomId, displayId])
-}
+//   @@id([roomId, displayId])
+// }
 
-model Display {
-  id           String        @id @default(uuid())
-  content      String
-  enable       Boolean       @default(true)
-  priority     Int           @default(0)
-  userId       String
-  createdBy    User          @relation(fields: [userId], references: [id])
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  roomDisplays RoomDisplay[]
+// model Display {
+//   id           String        @id @default(uuid())
+//   content      String
+//   enable       Boolean       @default(true)
+//   priority     Int           @default(0)
+//   userId       String
+//   createdBy    User          @relation(fields: [userId], references: [id])
+//   createdAt    DateTime      @default(now())
+//   updatedAt    DateTime      @updatedAt
+//   roomDisplays RoomDisplay[]
 
-  @@index([enable, userId])
-}
+//   @@index([enable, userId])
+// }
 
 // Clock 
 model RoomAlarm {

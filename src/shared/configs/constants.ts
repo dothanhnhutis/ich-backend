@@ -33,7 +33,7 @@ export const permissions = [
   // "delete:clock:timers",
 
   "read:tv",
-  "write:tv",
+  "write:display:order",
   "update:tv",
   "delete:tv",
 
