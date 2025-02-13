@@ -1,0 +1,190 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatusEnum {
+  ACTIVE
+  SUSPENDED
+  LOCKED
+}
+
+enum GenderEnum {
+  MALE
+  FEMALE
+  OTHER
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  emailVerified DateTime?
+  name          String
+  birthDate     String?
+  phoneNumber   String?
+  gender        GenderEnum?
+  image         String?
+  passwordHash  String?
+  status        UserStatusEnum @default(ACTIVE)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  userRoles     UserRole[]
+  mfa           MFA?
+  accounts      Account[]
+  displays      Display[]
+  alarms        Alarm[]
+  timers        Timer[]
+}
+
+model MFA {
+  userId     String
+  secretKey  String
+  lastAccess DateTime @updatedAt
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId])
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String // Khóa ngoại liên kết với User
+  provider          String // Ví dụ: 'google', 'facebook', 'github'
+  providerAccountId String // ID từ nhà cung cấp OAuth
+  accessToken       String? // Token từ OAuth
+  refreshToken      String?
+  expiresAt         Int? // Thời gian hết hạn token
+  tokenType         String?
+  scope             String?
+  idToken           String? // ID Token (OIDC)
+  sessionState      String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+// Role
+model UserRole {
+  userId    String
+  roleId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, roleId])
+}
+
+model Role {
+  id          String     @id @default(uuid())
+  name        String
+  permissions String[]   @default([])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  userRoles   UserRole[]
+}
+
+// Facility
+enum LocationTypeEnum {
+  Factory
+  Warehouse
+}
+
+model Location {
+  id           String           @id @default(uuid())
+  name         String
+  address      String
+  locationType LocationTypeEnum
+  rooms        Room[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([name, address])
+}
+
+model Room {
+  id           String        @id @default(uuid())
+  name         String
+  locationId   String
+  location     Location      @relation(fields: [locationId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  roomDisplays RoomDisplay[]
+  roomAlarms   RoomAlarm[]
+  roomTimers   RoomTimer[]
+
+  @@unique([locationId, name])
+  @@index([name, locationId])
+}
+
+// TV Display
+model RoomDisplay {
+  roomId     String
+  displayId  String
+  department Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  display    Display @relation(fields: [displayId], references: [id], onDelete: Cascade)
+
+  @@id([roomId, displayId])
+}
+
+model Display {
+  id           String        @id @default(uuid())
+  content      String
+  enable       Boolean       @default(true)
+  priority     Int           @default(0)
+  userId       String
+  createdBy    User          @relation(fields: [userId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  roomDisplays RoomDisplay[]
+
+  @@index([enable, userId])
+}
+
+// Clock 
+model RoomAlarm {
+  roomId  String
+  alarmId String
+  room    Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  alarm   Alarm  @relation(fields: [alarmId], references: [id], onDelete: Cascade)
+
+  @@id([roomId, alarmId])
+}
+
+model Alarm {
+  id         String      @id @default(uuid())
+  time       String //HH:mm
+  label      String      @default("")
+  enable     Boolean     @default(true)
+  repeat     String[]    @default([])
+  userId     String
+  createdBy  User        @relation(fields: [userId], references: [id])
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  roomAlarms RoomAlarm[]
+}
+
+model RoomTimer {
+  roomId  String
+  timerId String
+  room    Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  timer   Timer  @relation(fields: [timerId], references: [id], onDelete: Cascade)
+
+  @@id([roomId, timerId])
+}
+
+model Timer {
+  id            String      @id @default(uuid())
+  time          String //HH:mm:ss
+  remainingTime Int? //(milliseconds)
+  label         String      @default("")
+  status        String      @default("running") // pause | running 
+  createdAt     DateTime    @default(now())
+  userId        String
+  createdBy     User        @relation(fields: [userId], references: [id])
+  roomTimers    RoomTimer[]
+}

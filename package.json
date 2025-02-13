@@ -1,0 +1,52 @@
+{
+  "name": "ich",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "prisma": {
+    "seed": "node --require esbuild-register prisma/seed.ts"
+  },
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "tsup src/index.ts --watch --onSuccess 'node dist/index.js'",
+    "test": "vitest run",
+    "lint": "tsc",
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "ci": "npm run lint && npm run test && npm run build",
+    "release": "npm run ci && npx changeset publish"
+  },
+  "keywords": [],
+  "author": "Thanh Nhut",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.3.1",
+    "argon2": "^0.41.1",
+    "compression": "^1.7.5",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "esbuild": "^0.25.0",
+    "esbuild-register": "^3.6.0",
+    "express": "^4.21.2",
+    "express-async-errors": "^3.1.1",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "http-status-codes": "^2.3.0",
+    "ioredis": "^5.4.2",
+    "morgan": "^1.10.0",
+    "ua-parser-js": "^2.0.2",
+    "winston": "^3.17.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.12",
+    "@types/compression": "^1.7.5",
+    "@types/cors": "^2.8.17",
+    "@types/express": "4.17.21",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^22.13.0",
+    "prisma": "^6.3.1",
+    "tsup": "^8.3.6",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.4"
+  }
+}
