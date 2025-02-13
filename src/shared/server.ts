@@ -59,7 +59,7 @@ export default class Server {
             data: null,
           });
         }
-        logger.debug(error);
+        logger.error(error);
         return res
           .status(StatusCodes.INTERNAL_SERVER_ERROR)
           .send({ message: "Something went wrong" });

@@ -7,6 +7,7 @@ import { randId } from "@/shared/helper";
 import env from "@/shared/configs/env";
 import { UAParser } from "ua-parser-js";
 import { CookieOptions } from "express";
+import { Role } from "@/modules/role/v1/role.schema";
 
 const MFASessionName = "mfa:session";
 
@@ -89,6 +90,7 @@ export default class UserCache {
       },
     };
     const key = `${env.SESSION_KEY_NAME}:${userId}:${sessionId}`;
+
     try {
       await cache.set(
         key,
@@ -309,6 +311,41 @@ export default class UserCache {
         logger.error(`UserCache.getSessions() method error: `, error);
         throw new QueryCacheError(
           `UserCache.getSessions() method error: ${error.message}`
+        );
+      }
+      throw error;
+    }
+  }
+
+  static async createRolesOfUser(userId: string, roles: Role[]) {
+    try {
+      await cache.set(
+        `user:${userId}:roles`,
+        JSON.stringify(roles),
+        "EX",
+        CACHE_TTL
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error(`UserCache.createRolesOfUser() method error: `, error);
+        throw new QueryCacheError(
+          `UserCache.createRolesOfUser() method error: ${error.message}`
+        );
+      }
+      throw error;
+    }
+  }
+
+  static async getRolesOfUser(userId: string) {
+    try {
+      const roleCache = await cache.get(`user:${userId}:roles`);
+      if (!roleCache) return null;
+      return JSON.parse(roleCache) as Role[];
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error(`UserCache.getRolesOfUser() method error: `, error);
+        throw new QueryCacheError(
+          `UserCache.getRolesOfUser() method error: ${error.message}`
         );
       }
       throw error;

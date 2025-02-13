@@ -1,6 +1,8 @@
 import prisma from "@/shared/db/connect";
 import UserCache from "./user.cache";
 import { MFA, User, UserAttributeFilterProps } from "./user.schema";
+import logger from "@/shared/logger";
+import { Role } from "@/modules/role/v1/role.schema";
 
 function userPublicAttr(user: UserAttributeFilterProps): User {
   const {
@@ -26,12 +28,27 @@ export default class RoleRepositories {
       where: {
         email,
       },
+      include: {
+        userRoles: {
+          select: {
+            role: true,
+          },
+        },
+      },
     });
 
     if (user) {
       // const afterUser = userPublicAttr(user);
+
       if (cache ?? true) {
-        await UserCache.createUserCache(user);
+        const { userRoles, ...u } = user;
+        await UserCache.createUserCache(u);
+
+        // can kiem tra lai co nen cache user:[userId]:roles
+        await UserCache.createRolesOfUser(
+          u.id,
+          userRoles.map(({ role }) => role as Role)
+        );
       }
       return user;
     }
@@ -67,7 +84,12 @@ export default class RoleRepositories {
     return mfa;
   }
 
-  static async getRoles(userId: string) {
+  static async getRoles(userId: string, cache?: boolean) {
+    if (cache ?? true) {
+      const roles = await UserCache.getRolesOfUser(userId);
+      if (roles) return roles;
+    }
+
     const userRoles = await prisma.userRole.findMany({
       where: {
         userId,
@@ -75,13 +97,17 @@ export default class RoleRepositories {
     });
     const roleIds = userRoles.map((userRole) => userRole.roleId);
 
-    const roles = await prisma.role.findMany({
+    const roles = (await prisma.role.findMany({
       where: {
         id: {
           in: roleIds,
         },
       },
-    });
+    })) as Role[];
+
+    if (roles && (cache ?? true)) {
+      UserCache.createRolesOfUser(userId, roles);
+    }
 
     return roles;
   }

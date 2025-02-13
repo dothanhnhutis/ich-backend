@@ -6,6 +6,11 @@ import { createLocationSchema, updateLocationSchema } from "./location.schema";
 
 const router: Router = express.Router();
 
+router.get(
+  "/:locationId",
+  authMiddleware(),
+  LocationControllers.getLocationById
+);
 router.get("/", authMiddleware(), LocationControllers.getLocations);
 
 router.post(

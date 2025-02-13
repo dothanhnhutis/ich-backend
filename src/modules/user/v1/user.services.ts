@@ -1,12 +1,10 @@
 import { Request } from "express";
 import { SignInReq } from "./user.schema";
 import { BadRequestError } from "@/shared/error-handler";
-import { randId } from "@/shared/helper";
 import { compareData } from "@/shared/password";
 import UserRepositories from "./user.repositories";
 import UserCache from "./user.cache";
 import env from "@/shared/configs/env";
-import prisma from "@/shared/db/connect";
 
 export default class UserServices {
   static async signIn(req: Request<{}, {}, SignInReq["body"]>) {
@@ -54,6 +52,7 @@ export default class UserServices {
   ) {
     const key = `${env.SESSION_KEY_NAME}:${userId}:${sessionId}`;
     const session = await UserCache.getSessionByKey(key);
+
     if (!session || session.userId != userId)
       throw new BadRequestError("Phiên không tồn tại");
 

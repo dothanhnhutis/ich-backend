@@ -7,6 +7,7 @@ export default class LocationRepositories {
     const location = await prisma.location.findMany();
     return location;
   }
+
   static async createLocation(data: CreateLocation, storeCache?: boolean) {
     const location = await prisma.location.create({
       data,
@@ -26,10 +27,8 @@ export default class LocationRepositories {
       where: { id: locationId },
     });
 
-    if (location) {
-      if (cache ?? true) {
-        await LocationCache.create(location);
-      }
+    if (location && (cache ?? true)) {
+      await LocationCache.create(location);
     }
     return location;
   }
@@ -49,6 +48,20 @@ export default class LocationRepositories {
       await LocationCache.create(location);
     }
     return location;
+  }
+
+  static async getRoomOfLocation(locationId: string) {
+    const location = await prisma.location.findUnique({
+      where: {
+        id: locationId,
+      },
+      include: {
+        rooms: true,
+      },
+    });
+
+    if (!location) return [];
+    return location.rooms;
   }
 
   static async deleteLocationById(locationId: string, clearCache?: boolean) {
