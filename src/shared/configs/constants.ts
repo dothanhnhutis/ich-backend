@@ -48,8 +48,9 @@ export const permissions = [
   // "update:alarms",
   // "delete:alarms",
 
+  "read:product:*",
+  "read:product:id",
   "write:product",
-  "read:product",
   "edit:product",
   "delete:product",
 ] as const;

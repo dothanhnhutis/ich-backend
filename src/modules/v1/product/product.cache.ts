@@ -23,4 +23,33 @@ export default class ProductCache {
       throw error;
     }
   }
+
+  static async getProductById(productId: string) {
+    try {
+      const product = await cache.get(`product:${productId}`);
+      return product ? (JSON.parse(product) as Product) : null;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        logger.error(`ProductCache.store() method error: `, error);
+        throw new QueryCacheError(
+          `ProductCache.store() method error: ${error.message}`
+        );
+      }
+      throw error;
+    }
+  }
+
+  static async deleteProductById(productId: string) {
+    try {
+      await cache.del(`product:${productId}`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        logger.error(`ProductCache.deleteProductById() method error: `, error);
+        throw new QueryCacheError(
+          `ProductCache.deleteProductById() method error: ${error.message}`
+        );
+      }
+      throw error;
+    }
+  }
 }

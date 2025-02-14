@@ -128,13 +128,12 @@ enum ProductUnit {
 }
 
 model Product {
-  id        String      @id @default(uuid())
+  id        String   @id @default(uuid())
   pro_name  String
   images    String[]
-  unit      ProductUnit
-  pack_spec Int
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  pack_spec Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // TV Display 
