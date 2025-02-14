@@ -17,7 +17,9 @@ const validateResource =
       next();
     } catch (error: any) {
       if (error instanceof ZodError && !error.isEmpty)
-        throw new BadRequestError(error.issues[0].message);
+        throw new BadRequestError(
+          `${error.issues[0].message}. At: ${error.issues[0].path.toString()}`
+        );
       next(error);
     }
   };

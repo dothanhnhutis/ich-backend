@@ -1,4 +1,4 @@
-import LocationRepositories from "@/modules/location/v1/location.repositories";
+import LocationRepositories from "@/modules/v1/location/location.repositories";
 import RoomRepositories from "./room.repositories";
 import { CreateRoom, UpdateRoom } from "./room.schema";
 import { BadRequestError } from "@/shared/error-handler";

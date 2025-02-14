@@ -1,7 +1,7 @@
 import { RequestHandler as Middleware } from "express";
 import env from "../configs/env";
-import UserCache from "@/modules/user/v1/user.cache";
-import { SessionData } from "@/modules/user/v1/user.schema";
+import UserCache from "@/modules/v1/user/user.cache";
+import { SessionData } from "@/modules/v1/user/user.schema";
 import { decrypt, encrypt } from "../helper";
 
 declare global {

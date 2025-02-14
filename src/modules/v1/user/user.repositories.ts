@@ -1,8 +1,7 @@
 import prisma from "@/shared/db/connect";
 import UserCache from "./user.cache";
 import { MFA, User, UserAttributeFilterProps } from "./user.schema";
-import logger from "@/shared/logger";
-import { Role } from "@/modules/role/v1/role.schema";
+import { Role } from "@/modules/v1/role/role.schema";
 
 function userPublicAttr(user: UserAttributeFilterProps): User {
   const {

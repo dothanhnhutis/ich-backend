@@ -1,6 +1,6 @@
-import { Role } from "@/modules/role/v1/role.schema";
-import UserRepositories from "@/modules/user/v1/user.repositories";
-import { User } from "@/modules/user/v1/user.schema";
+import { Role } from "@/modules/v1/role/role.schema";
+import UserRepositories from "@/modules/v1/user/user.repositories";
+import { User } from "@/modules/v1/user/user.schema";
 import { RequestHandler as Middleware } from "express";
 
 declare global {

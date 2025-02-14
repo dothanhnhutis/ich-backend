@@ -1,13 +1,13 @@
 import { cache } from "@/shared/cache/connect";
 import { QueryCacheError } from "@/shared/error-handler";
 import logger from "@/shared/logger";
-import { CreateSession, MFA, SessionData, User } from "./user.schema";
+import { MFA, SessionData, User } from "./user.schema";
 import { CACHE_TTL } from "@/shared/configs/constants";
 import { randId } from "@/shared/helper";
 import env from "@/shared/configs/env";
 import { UAParser } from "ua-parser-js";
 import { CookieOptions } from "express";
-import { Role } from "@/modules/role/v1/role.schema";
+import { Role } from "@/modules/v1/role/role.schema";
 
 const MFASessionName = "mfa:session";
 

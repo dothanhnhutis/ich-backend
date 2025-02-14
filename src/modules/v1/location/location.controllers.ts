@@ -22,6 +22,7 @@ export default class LocationControllers {
       data: locations,
     });
   }
+
   static async getLocationById(
     req: Request<{ locationId: string }>,
     res: Response

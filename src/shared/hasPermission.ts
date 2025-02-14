@@ -1,4 +1,4 @@
-import { Role } from "@/modules/role/v1/role.schema";
+import { Role } from "@/modules/v1/role/role.schema";
 
 export default function hasPermission(
   roles: Role[],

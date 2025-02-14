@@ -1,16 +1,8 @@
 import { Router } from "express";
-import userRoutes from "./user";
-import locationRoutes from "./location";
-import roleRoutes from "./role";
-import roomRoutes from "./room";
-import displayRoutes from "./display";
+import v1 from "./v1";
 
 const router = Router();
 
-router.use("/users", userRoutes);
-router.use("/locations", locationRoutes);
-router.use("/roles", roleRoutes);
-router.use("/rooms", roomRoutes);
-router.use("/displays", displayRoutes);
+router.use("/v1", v1);
 
 export default router;

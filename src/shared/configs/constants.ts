@@ -32,10 +32,16 @@ export const permissions = [
   // "update:clock:timers",
   // "delete:clock:timers",
 
-  "read:tv",
-  "write:display:order",
-  "update:tv",
-  "delete:tv",
+  "read:display:id",
+  "read:display:*",
+  "write:display",
+  "update:display",
+  "delete:display",
+
+  "read:display:order:id",
+  "read:display:order:*",
+  "update:display:order",
+  "delete:display:order",
 
   // "write:alarms",
   // "read:alarms",
