@@ -129,16 +129,15 @@ enum ProductUnit {
 
 model Product {
   id        String      @id @default(uuid())
-  name      String
+  pro_name  String
   images    String[]
-  quantity  Int
   unit      ProductUnit
   pack_spec Int
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 }
 
-// TV Display
+// TV Display 
 enum DisplayOrderStatus {
   TO_DO
   ON_PROGRESS
@@ -147,12 +146,13 @@ enum DisplayOrderStatus {
 
 model DisplayOrderProduct {
   id             String       @id @default(uuid())
-  productName    String
+  pro_name       String
   image          String
   unit           ProductUnit
   priority       Int          @default(0)
   quantity       Int
-  packSpec       Int
+  pack_spec      Int
+  note           String[]     @default([])
   displayOrderId String
   displayOrder   DisplayOrder @relation(fields: [displayOrderId], references: [id], onDelete: Cascade)
   createdAt      DateTime     @default(now())
@@ -161,14 +161,15 @@ model DisplayOrderProduct {
 
 model DisplayOrder {
   id                String                @id @default(uuid())
-  customerName      String
+  cus_name          String
   priority          Int                   @default(0)
   status            DisplayOrderStatus    @default(TO_DO)
-  products          DisplayOrderProduct[]
-  address           String?
-  phoneNumber       String?
+  note              String[]              @default([])
+  address           String                @default("")
+  phone_number      String                @default("")
   createdAt         DateTime              @default(now())
   updatedAt         DateTime              @updatedAt
+  products          DisplayOrderProduct[]
   displayOrderRooms DisplayOrderRoom[]
 }
 

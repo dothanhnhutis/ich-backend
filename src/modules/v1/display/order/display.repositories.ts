@@ -42,9 +42,7 @@ export default class DisplayOrderRepositories {
       }
     }
 
-    return {
-      ...newDisplay,
-    };
+    return newDisplay;
   }
 
   static async getDisplayOrderById(displayOrderId: string, cache?: boolean) {
@@ -52,45 +50,20 @@ export default class DisplayOrderRepositories {
       const displayOrderCache = await DisplayOrderCache.getDisplayOrderById(
         displayOrderId
       );
-      if (displayOrderCache) {
-        return displayOrderCache;
-      }
+      if (displayOrderCache) return displayOrderCache;
     }
 
     const displayOrder = await prisma.displayOrder.findUnique({
       where: {
         id: displayOrderId,
       },
-      include: {
-        products: true,
-        displayOrderRooms: {
-          select: {
-            room: true,
-          },
-        },
-      },
     });
 
     if (!displayOrder) return null;
-
-    const {
-      products: productList,
-      displayOrderRooms,
-      ...newDisplay
-    } = displayOrder;
-
     if (cache ?? true) {
-      await DisplayOrderCache.store(newDisplay);
-      for (const product of productList) {
-        await DisplayOrderProductCache.store(product);
-      }
+      await DisplayOrderCache.store(displayOrder);
     }
-
-    return {
-      ...newDisplay,
-      products: productList,
-      rooms: displayOrderRooms.map((displayOrderRoom) => displayOrderRoom.room),
-    };
+    return displayOrder;
   }
 
   static async deleteDisplayOrder(displayOrderId: string) {}

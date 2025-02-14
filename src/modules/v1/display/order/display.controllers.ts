@@ -10,8 +10,9 @@ export default class DisplayOrderControllers {
     req: Request<{ displayOrderId: string }>,
     res: Response
   ) {
-    if (!hasPermission(req.roles!, "read:display:id"))
+    if (!hasPermission(req.roles!, "read:display:order:id"))
       throw new PermissionError();
+
     const displayOrder = await DisplayOrderServices.getDisplayOrderById(
       req.params.displayOrderId
     );
@@ -28,7 +29,7 @@ export default class DisplayOrderControllers {
     req: Request<{}, {}, CreateDisplayOrderReq["body"]>,
     res: Response
   ) {
-    if (!hasPermission(req.roles!, "write:display"))
+    if (!hasPermission(req.roles!, "write:display:order"))
       throw new PermissionError();
     const data = req.body;
     const displayOrder = await DisplayOrderServices.createNewDisplayOrder(data);

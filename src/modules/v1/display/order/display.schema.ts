@@ -1,7 +1,8 @@
+import { pro_unit } from "@/shared/configs/constants";
 import * as z from "zod";
 
 const displayOrderProductSchema = z.object({
-  productName: z.string({
+  pro_name: z.string({
     invalid_type_error: "Tên sản phẩm là chuỗi",
     required_error: "Tên sản phẩm là bắt buộc",
   }),
@@ -18,7 +19,7 @@ const displayOrderProductSchema = z.object({
     })
     .min(0, "Mức độ phải là số nguyên dương")
     .default(0),
-  unit: z.enum(["CARTON", "PACKAGED_GOODS"], {
+  unit: z.enum(pro_unit, {
     invalid_type_error: "Đơn vị tính phải là 'CARTON', 'PACKAGED_GOODS'",
     required_error: "Đơn vị tính là bắt buộc",
   }),
@@ -28,7 +29,7 @@ const displayOrderProductSchema = z.object({
       required_error: "Số lượng là bắt buộc",
     })
     .min(0, "Số lượng phải là số nguyên dương"),
-  packSpec: z
+  pack_spec: z
     .number({
       invalid_type_error: "Quy cách phải là số nguyên",
       required_error: "Quy cách là bắt buộc",
@@ -38,7 +39,7 @@ const displayOrderProductSchema = z.object({
 
 export const createDisplayOrderSchema = z.object({
   body: z.object({
-    customerName: z.string({
+    cus_name: z.string({
       invalid_type_error: "Tên khách hàng phải là chuỗi",
       required_error: "Tên khách hàng là bắt buộc",
     }),

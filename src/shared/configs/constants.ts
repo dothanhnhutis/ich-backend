@@ -32,27 +32,29 @@ export const permissions = [
   // "update:clock:timers",
   // "delete:clock:timers",
 
-  "read:display:id",
-  "read:display:*",
-  "write:display",
-  "update:display",
-  "delete:display",
-
   "read:display:order:id",
   "read:display:order:*",
+  "write:display:order",
   "update:display:order",
   "delete:display:order",
+
+  "read:display:order:product:id",
+  "read:display:order:product:*",
+  "update:display:order:product",
+  "delete:display:order:product",
 
   // "write:alarms",
   // "read:alarms",
   // "update:alarms",
   // "delete:alarms",
 
-  // "write:products",
-  // "read:products",
-  // "update:products",
-  // "delete:products",
+  "write:product",
+  "read:product",
+  "edit:product",
+  "delete:product",
 ] as const;
+
+export const pro_unit = ["CARTON", "PACKAGED_GOODS"] as const;
 
 export const dateRegex =
   /^(0[1-9]|[12][0-9]|3[01])[-\/](0[1-9]|1[0-2])[-\/](\d{4})$/;
