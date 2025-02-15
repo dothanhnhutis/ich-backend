@@ -26,7 +26,56 @@ export class DisplayOrderProductCache {
       throw error;
     }
   }
+
+  static async getDisplayOrderProductById(
+    displayOrderId: string,
+    displayOrderProductId: string
+  ) {
+    try {
+      const displayOrderProduct = await cache.get(
+        `displayOrder:${displayOrderId}:product:${displayOrderProductId}`
+      );
+      return displayOrderProduct
+        ? (JSON.parse(displayOrderProduct) as DisplayOrderProduct)
+        : null;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        logger.error(
+          `DisplayOrderProductCache.getDisplayOrderProductById() method error: `,
+          error
+        );
+        throw new QueryCacheError(
+          `DisplayOrderProductCache.getDisplayOrderProductById() method error: ${error.message}`
+        );
+      }
+      throw error;
+    }
+  }
+
+  static async delete(displayOrderId: string, displayOrderProductId: string) {
+    try {
+      await cache.del(
+        `displayOrder:${displayOrderId}:product:${displayOrderProductId}`
+      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        logger.error(`DisplayOrderProductCache.delete() method error: `, error);
+        throw new QueryCacheError(
+          `DisplayOrderProductCache.delete() method error: ${error.message}`
+        );
+      }
+      throw error;
+    }
+  }
 }
+
+// export class DisplayOrderRoomCache {
+//   static async store(data:) {
+
+//   }
+
+//   static async delete() {}
+// }
 
 export class DisplayOrderCache {
   static async store(data: DisplayOrder) {
@@ -63,6 +112,23 @@ export class DisplayOrderCache {
         );
         throw new QueryCacheError(
           `DisplayOrderCache.getDisplayOrderById() method error: ${error.message}`
+        );
+      }
+      throw error;
+    }
+  }
+
+  static async deleteDisplayOrderById(displayOrderId: string) {
+    try {
+      await cache.del(`displayOrder:${displayOrderId}`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        logger.error(
+          `DisplayOrderCache.deleteDisplayOrderById() method error: `,
+          error
+        );
+        throw new QueryCacheError(
+          `DisplayOrderCache.deleteDisplayOrderById() method error: ${error.message}`
         );
       }
       throw error;

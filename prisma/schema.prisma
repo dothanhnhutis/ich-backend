@@ -177,6 +177,7 @@ model DisplayOrderRoom {
   displayOrderId String
   room           Room         @relation(fields: [roomId], references: [id], onDelete: Cascade)
   displayOrder   DisplayOrder @relation(fields: [displayOrderId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
 
   @@id([roomId, displayOrderId])
 }

@@ -56,7 +56,7 @@ export default class DisplayOrderControllers {
     res.status(StatusCodes.OK).json({
       status: StatusCodes.OK,
       success: true,
-      message: "Tạo hiển thị đơn hàng thành công",
+      message: "Xoá hiển thị đơn hàng thành công",
       data: displayOrder,
     });
   }

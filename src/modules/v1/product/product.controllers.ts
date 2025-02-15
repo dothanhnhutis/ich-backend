@@ -25,7 +25,17 @@ export default class ProductControllers {
       data: product,
     });
   }
-  static async getProducts(req: Request, res: Response) {}
+  static async getProducts(req: Request, res: Response) {
+    if (!hasPermission(req.roles!, "read:product:*"))
+      throw new PermissionError();
+    const products = await ProductServices.getProducts();
+    res.status(StatusCodes.OK).json({
+      status: StatusCodes.OK,
+      success: true,
+      message: "",
+      data: products,
+    });
+  }
 
   static async createNewProduct(
     req: Request<{}, {}, CreateProductReq["body"]>,

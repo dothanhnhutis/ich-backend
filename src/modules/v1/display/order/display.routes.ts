@@ -25,4 +25,10 @@ router.post(
   DisplayOrderControllers.createDisplayOrder
 );
 
+router.delete(
+  "/:displayOrderId",
+  authMiddleware(),
+  DisplayOrderControllers.deleteDisplayOrder
+);
+
 export default router;

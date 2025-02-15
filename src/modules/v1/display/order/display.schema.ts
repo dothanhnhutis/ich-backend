@@ -35,6 +35,8 @@ const displayOrderProductSchema = z.object({
       required_error: "Quy cách là bắt buộc",
     })
     .min(0, "Quy cách phải là số nguyên dương"),
+
+  note: z.array(z.string()).default([]),
 });
 
 export const createDisplayOrderSchema = z.object({
@@ -64,13 +66,13 @@ export const createDisplayOrderSchema = z.object({
         invalid_type_error: "Địa chỉ phải là số nguyên",
       })
       .optional()
-      .nullable(),
-    phoneNumber: z
+      .default(""),
+    phone_number: z
       .string({
         invalid_type_error: "Số điện thoại phải là số nguyên",
       })
       .optional()
-      .nullable(),
+      .default(""),
     roomIds: z.array(
       z.string({
         invalid_type_error: "Các phần tử trong mãng phải là chuỗi",
@@ -80,6 +82,7 @@ export const createDisplayOrderSchema = z.object({
         required_error: "Mã phòng là bắt buộc",
       }
     ),
+    note: z.array(z.string()).default([]),
   }),
 });
 

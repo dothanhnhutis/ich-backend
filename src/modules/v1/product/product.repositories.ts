@@ -34,6 +34,11 @@ export default class ProductRepositories {
     return product;
   }
 
+  static async getProducts() {
+    const products = await prisma.product.findMany({});
+    return products;
+  }
+
   static async updateProductById(
     productId: string,
     data: UpdateProduct,

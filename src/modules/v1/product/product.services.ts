@@ -20,6 +20,10 @@ export default class ProductServices {
     return product;
   }
 
+  static async getProducts() {
+    return await ProductRepositories.getProducts();
+  }
+
   static async deleteProductById(productId: string) {
     const product = await ProductRepositories.getProductById(productId);
     if (!product) throw new BadRequestError("Sản phẩm không tồn tại");

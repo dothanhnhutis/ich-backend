@@ -20,14 +20,25 @@ export default class DispalyOrderServices {
 
   static async getDisplayOrderById(displayOrderId: string) {
     const displayOrder = await DispalyOrderRepositories.getDisplayOrderById(
-      displayOrderId,
-      false
+      displayOrderId
     );
+
     if (!displayOrder)
       throw new BadRequestError("Hiển thị đơn hàng không tồn tại.");
 
     return displayOrder;
   }
 
-  static async deleteDisplayOrder(displayOrderId: string) {}
+  static async deleteDisplayOrder(displayOrderId: string) {
+    const displayOrder = await DispalyOrderRepositories.getDisplayOrderById(
+      displayOrderId
+    );
+
+    if (!displayOrder)
+      throw new BadRequestError("Hiển thị đơn hàng không tồn tại.");
+
+    await DispalyOrderRepositories.deleteDisplayOrderById(displayOrderId);
+
+    return displayOrder;
+  }
 }

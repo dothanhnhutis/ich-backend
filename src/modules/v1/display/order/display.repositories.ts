@@ -66,5 +66,33 @@ export default class DisplayOrderRepositories {
     return displayOrder;
   }
 
-  static async deleteDisplayOrder(displayOrderId: string) {}
+  static async deleteDisplayOrderById(
+    displayOrderId: string,
+    clearCache?: boolean
+  ) {
+    const {
+      products: productList,
+      displayOrderRooms,
+      ...deletedDisplay
+    } = await prisma.displayOrder.delete({
+      where: { id: displayOrderId },
+      include: {
+        products: true,
+        displayOrderRooms: {
+          select: {
+            room: true,
+          },
+        },
+      },
+    });
+
+    if (clearCache ?? true) {
+      await DisplayOrderCache.deleteDisplayOrderById(displayOrderId);
+      for (const product of productList) {
+        await DisplayOrderProductCache.delete(displayOrderId, product.id);
+      }
+    }
+
+    return deletedDisplay;
+  }
 }
