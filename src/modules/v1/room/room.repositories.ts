@@ -17,7 +17,7 @@ export default class RoomRepositories {
   static async getUniqueData(data: CreateRoom) {
     const room = await prisma.room.findUnique({
       where: {
-        locationId_name: data,
+        location_id_room_name: data,
       },
       include: {
         location: true,

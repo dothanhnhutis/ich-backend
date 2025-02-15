@@ -58,14 +58,14 @@ export default class ProductRepositories {
     return prisma;
   }
 
-  static async deleteProductById(productId: string, cleadCache?: boolean) {
+  static async deleteProductById(productId: string, clearCache?: boolean) {
     const product = await prisma.product.delete({
       where: {
         id: productId,
       },
     });
 
-    if (cleadCache ?? true) {
+    if (clearCache ?? true) {
       await ProductCache.deleteProductById(productId);
     }
 

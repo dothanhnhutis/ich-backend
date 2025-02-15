@@ -2,7 +2,7 @@ import { pro_unit } from "@/shared/configs/constants";
 import * as z from "zod";
 
 const displayOrderProductSchema = z.object({
-  pro_name: z.string({
+  prod_name: z.string({
     invalid_type_error: "Tên sản phẩm là chuỗi",
     required_error: "Tên sản phẩm là bắt buộc",
   }),
@@ -73,7 +73,7 @@ export const createDisplayOrderSchema = z.object({
       })
       .optional()
       .default(""),
-    roomIds: z.array(
+    room_ids: z.array(
       z.string({
         invalid_type_error: "Các phần tử trong mãng phải là chuỗi",
       }),
@@ -90,15 +90,15 @@ export type CreateDisplayOrderReq = z.infer<typeof createDisplayOrderSchema>;
 
 export type CreateDisplayOrder = CreateDisplayOrderReq["body"];
 
-export type DisplayOrder = Omit<CreateDisplayOrder, "products" | "roomIds"> & {
+export type DisplayOrder = Omit<CreateDisplayOrder, "products" | "room_ids"> & {
   id: string;
-  createdAt: Date;
-  updatedAt: Date;
+  created_at: Date;
+  updated_at: Date;
 };
 
 export type DisplayOrderProduct = z.infer<typeof displayOrderProductSchema> & {
   id: string;
-  displayOrderId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  display_order_id: string;
+  created_at: Date;
+  updated_at: Date;
 };

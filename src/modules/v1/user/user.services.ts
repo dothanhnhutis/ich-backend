@@ -12,8 +12,8 @@ export default class UserServices {
     const user = await UserRepositories.getUserByEmail(email);
     if (
       !user ||
-      !user.passwordHash ||
-      !(await compareData(user.passwordHash, password))
+      !user.password_hash ||
+      !(await compareData(user.password_hash, password))
     )
       throw new BadRequestError("Email và mật khẩu không hợp lệ.");
 
@@ -27,15 +27,19 @@ export default class UserServices {
 
     const mfa = await UserRepositories.getMFa(user.id);
     if (mfa) {
-      const session = await UserCache.createMFASession(user.id, mfa.secretKey, {
-        ip: req.ip || "",
-        userAgentRaw: req.headers["user-agent"] || "",
-      });
+      const session = await UserCache.createMFASession(
+        user.id,
+        mfa.secret_key,
+        {
+          ip: req.ip || "",
+          user_agent_raw: req.headers["user-agent"] || "",
+        }
+      );
       return { message: "Cần xác thực đa yếu tố (MFA)", session };
     } else {
       const session = await UserCache.createSignInSession(user.id, {
         ip: req.ip || "",
-        userAgentRaw: req.headers["user-agent"] || "",
+        user_agent_raw: req.headers["user-agent"] || "",
       });
       return { message: "Đăng nhập thành công", session };
     }
@@ -53,7 +57,7 @@ export default class UserServices {
     const key = `${env.SESSION_KEY_NAME}:${userId}:${sessionId}`;
     const session = await UserCache.getSessionByKey(key);
 
-    if (!session || session.userId != userId)
+    if (!session || session.user_id != userId)
       throw new BadRequestError("Phiên không tồn tại");
 
     if (session.id == currentSession)

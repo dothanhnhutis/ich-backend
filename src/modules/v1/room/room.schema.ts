@@ -2,11 +2,11 @@ import * as z from "zod";
 
 export const createRoomSchema = z.object({
   body: z.object({
-    name: z.string({
+    room_name: z.string({
       required_error: "Tên phòng là trường bắt buộc",
       invalid_type_error: "Tên phòng phải là chuỗi",
     }),
-    locationId: z.string({
+    location_id: z.string({
       required_error: "Địa điểm là trường bắt buộc",
       invalid_type_error: "Địa điểm phải là chuỗi",
     }),
@@ -19,12 +19,10 @@ export const updateRoomSchema = z.object({
   }),
   body: z
     .object({
-      name: z.string({
-        required_error: "Tên phòng là trường bắt buộc",
+      room_name: z.string({
         invalid_type_error: "Tên phòng phải là chuỗi",
       }),
-      locationId: z.string({
-        required_error: "Địa điểm là trường bắt buộc",
+      location_id: z.string({
         invalid_type_error: "Địa điểm phải là chuỗi",
       }),
     })
@@ -40,6 +38,6 @@ export type UpdateRoom = UpdateRoomReq["body"];
 
 export type Room = CreateRoom & {
   id: string;
-  createdAt: Date;
-  updatedAt: Date;
+  created_at: Date;
+  updated_at: Date;
 };

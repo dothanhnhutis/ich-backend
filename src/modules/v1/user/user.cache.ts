@@ -61,10 +61,10 @@ export default class UserCache {
   }
 
   static async createSignInSession(
-    userId: string,
-    reqInfo: {
+    user_id: string,
+    req_info: {
       ip: string;
-      userAgentRaw: string;
+      user_agent_raw: string;
     },
     cookie?: CookieOptions
   ) {
@@ -80,16 +80,16 @@ export default class UserCache {
     };
     const sessionData: SessionData = {
       id: sessionId,
-      userId,
+      user_id,
       cookie: cookieOpt,
-      reqInfo: {
-        ...reqInfo,
-        userAgent: UAParser(reqInfo.userAgentRaw),
-        lastAccess: now,
-        createAt: now,
+      req_info: {
+        ...req_info,
+        user_agent: UAParser(req_info.user_agent_raw),
+        last_access: now,
+        create_at: now,
       },
     };
-    const key = `${env.SESSION_KEY_NAME}:${userId}:${sessionId}`;
+    const key = `${env.SESSION_KEY_NAME}:${user_id}:${sessionId}`;
 
     try {
       await cache.set(
@@ -152,7 +152,7 @@ export default class UserCache {
       const sessionData: SessionData = JSON.parse(session);
       const now = Date.now();
       const expires: Date = new Date(now + parseInt(env.SESSION_MAX_AGE));
-      sessionData.reqInfo.lastAccess = new Date(now);
+      sessionData.req_info.last_access = new Date(now);
       sessionData.cookie.expires = expires;
       await cache.set(
         key,
@@ -192,7 +192,7 @@ export default class UserCache {
   static async createMFA(data: MFA) {
     try {
       await cache.set(
-        `mfa:${data.userId}`,
+        `mfa:${data.user_id}`,
         JSON.stringify(data),
         "EX",
         CACHE_TTL
@@ -209,11 +209,11 @@ export default class UserCache {
   }
 
   static async createMFASession(
-    userId: string,
-    secretKey: string,
-    reqInfo: {
+    user_id: string,
+    secret_key: string,
+    req_info: {
       ip: string;
-      userAgentRaw: string;
+      user_agent_raw: string;
     },
     cookie?: CookieOptions
   ) {
@@ -228,24 +228,24 @@ export default class UserCache {
         ...cookie,
       };
 
-      const key = `${MFASessionName}:${userId}:${sessionId}`;
+      const key = `${MFASessionName}:${user_id}:${sessionId}`;
       const sessionData: SessionData = {
         id: sessionId,
-        userId: userId,
+        user_id,
         cookie: cookieOpt,
-        reqInfo: {
-          ...reqInfo,
-          userAgent: UAParser(reqInfo.userAgentRaw),
-          lastAccess: now,
-          createAt: now,
+        req_info: {
+          ...req_info,
+          user_agent: UAParser(req_info.user_agent_raw),
+          last_access: now,
+          create_at: now,
         },
       };
 
       await cache.set(
         key,
         JSON.stringify({
-          userId,
-          secretKey,
+          user_id,
+          secret_key,
         }),
         "PX",
         cookieOpt.expires.getTime() - Date.now()

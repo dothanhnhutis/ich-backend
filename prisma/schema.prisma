@@ -20,71 +20,71 @@ enum GenderEnum {
 }
 
 model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  emailVerified DateTime?
-  name          String
-  birthDate     String?
-  phoneNumber   String?
-  gender        GenderEnum?
-  image         String?
-  passwordHash  String?
-  status        UserStatusEnum @default(ACTIVE)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  userRoles     UserRole[]
-  mfa           MFA?
-  accounts      Account[]
-  alarms        Alarm[]
-  timers        Timer[]
+  id             String         @id @default(uuid())
+  email          String         @unique
+  email_verified DateTime?
+  name           String
+  birth_date     String?
+  phone_number   String?
+  gender         GenderEnum?
+  image          String?
+  password_hash  String?
+  status         UserStatusEnum @default(ACTIVE)
+  created_at     DateTime       @default(now())
+  updated_at     DateTime       @updatedAt
+  user_roles     UserRole[]
+  mfa            MFA?
+  accounts       Account[]
+  alarms         Alarm[]
+  timers         Timer[]
 }
 
 model MFA {
-  userId     String
-  secretKey  String
-  lastAccess DateTime @updatedAt
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user_id     String
+  secret_key  String
+  last_access DateTime @updatedAt
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@id([userId])
+  @@id([user_id])
 }
 
 model Account {
-  id                String  @id @default(uuid())
-  userId            String // Khóa ngoại liên kết với User
-  provider          String // Ví dụ: 'google', 'facebook', 'github'
-  providerAccountId String // ID từ nhà cung cấp OAuth
-  accessToken       String? // Token từ OAuth
-  refreshToken      String?
-  expiresAt         Int? // Thời gian hết hạn token
-  tokenType         String?
-  scope             String?
-  idToken           String? // ID Token (OIDC)
-  sessionState      String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String  @id @default(uuid())
+  user_id       String // Khóa ngoại liên kết với User
+  provider      String // Ví dụ: 'google', 'facebook', 'github'
+  provider_id   String // ID từ nhà cung cấp OAuth
+  access_token  String? // Token từ OAuth
+  refresh_token String?
+  expires_at    Int? // Thời gian hết hạn token
+  token_type    String?
+  scope         String?
+  id_token      String? // ID Token (OIDC)
+  session_state String?
+  user          User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@unique([provider, providerAccountId])
+  @@unique([provider, provider_id])
 }
 
 // Role
 model UserRole {
-  userId    String
-  roleId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  user_id    String
+  role_id    String
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  role       Role     @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  created_at DateTime @default(now())
 
-  @@id([userId, roleId])
+  @@id([user_id, role_id])
 }
 
 model Role {
   id          String     @id @default(uuid())
   name        String
   permissions String[]   @default([])
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  userRoles   UserRole[]
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+  user_roles  UserRole[]
 }
 
 // Facility
@@ -94,31 +94,31 @@ enum LocationTypeEnum {
 }
 
 model Location {
-  id           String           @id @default(uuid())
-  name         String
-  address      String
-  locationType LocationTypeEnum
-  rooms        Room[]
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  id            String           @id @default(uuid())
+  location_name String
+  address       String
+  location_type LocationTypeEnum
+  rooms         Room[]
+  created_at    DateTime         @default(now())
+  updated_at    DateTime         @updatedAt
 
-  @@index([name, address])
+  @@index([location_name, address])
 }
 
 model Room {
-  id                String             @id @default(uuid())
-  name              String
-  locationId        String
-  location          Location           @relation(fields: [locationId], references: [id])
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  id                  String             @id @default(uuid())
+  room_name           String
+  location_id         String
+  location            Location           @relation(fields: [location_id], references: [id])
+  created_at          DateTime           @default(now())
+  updated_at          DateTime           @updatedAt
   // roomDisplays      RoomDisplay[]
-  roomAlarms        RoomAlarm[]
-  roomTimers        RoomTimer[]
-  displayOrderRooms DisplayOrderRoom[]
+  room_alarms         RoomAlarm[]
+  room_timers         RoomTimer[]
+  display_order_rooms DisplayOrderRoom[]
 
-  @@unique([locationId, name])
-  @@index([locationId, name])
+  @@unique([location_id, room_name])
+  @@index([location_id, room_name])
 }
 
 // Product
@@ -128,12 +128,12 @@ enum ProductUnit {
 }
 
 model Product {
-  id        String   @id @default(uuid())
-  pro_name  String
-  images    String[]
-  pack_spec Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(uuid())
+  prod_name  String
+  images     String[]
+  pack_spec  Int      @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 // TV Display 
@@ -144,42 +144,42 @@ enum DisplayOrderStatus {
 }
 
 model DisplayOrderProduct {
-  id             String       @id @default(uuid())
-  pro_name       String
-  image          String
-  unit           ProductUnit
-  priority       Int          @default(0)
-  quantity       Int
-  pack_spec      Int
-  note           String[]     @default([])
-  displayOrderId String
-  displayOrder   DisplayOrder @relation(fields: [displayOrderId], references: [id], onDelete: Cascade)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id               String       @id @default(uuid())
+  prod_name        String
+  image            String
+  unit             ProductUnit
+  priority         Int          @default(0)
+  quantity         Int
+  pack_spec        Int
+  note             String[]     @default([])
+  display_order_id String
+  display_order    DisplayOrder @relation(fields: [display_order_id], references: [id], onDelete: Cascade)
+  created_at       DateTime     @default(now())
+  updated_at       DateTime     @updatedAt
 }
 
 model DisplayOrder {
-  id                String                @id @default(uuid())
-  cus_name          String
-  priority          Int                   @default(0)
-  status            DisplayOrderStatus    @default(TO_DO)
-  note              String[]              @default([])
-  address           String                @default("")
-  phone_number      String                @default("")
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
-  products          DisplayOrderProduct[]
-  displayOrderRooms DisplayOrderRoom[]
+  id                  String                @id @default(uuid())
+  cus_name            String
+  priority            Int                   @default(0)
+  status              DisplayOrderStatus    @default(TO_DO)
+  note                String[]              @default([])
+  address             String                @default("")
+  phone_number        String                @default("")
+  created_at          DateTime              @default(now())
+  updated_at          DateTime              @updatedAt
+  products            DisplayOrderProduct[]
+  display_order_rooms DisplayOrderRoom[]
 }
 
 model DisplayOrderRoom {
-  roomId         String
-  displayOrderId String
-  room           Room         @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  displayOrder   DisplayOrder @relation(fields: [displayOrderId], references: [id], onDelete: Cascade)
-  createdAt      DateTime     @default(now())
+  room_id          String
+  display_order_id String
+  room             Room         @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  display_order    DisplayOrder @relation(fields: [display_order_id], references: [id], onDelete: Cascade)
+  created_at       DateTime     @default(now())
 
-  @@id([roomId, displayOrderId])
+  @@id([room_id, display_order_id])
 }
 
 // TV Display
@@ -208,44 +208,44 @@ model DisplayOrderRoom {
 
 // Clock 
 model RoomAlarm {
-  roomId  String
-  alarmId String
-  room    Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  alarm   Alarm  @relation(fields: [alarmId], references: [id], onDelete: Cascade)
+  room_id  String
+  alarm_id String
+  room     Room   @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  alarm    Alarm  @relation(fields: [alarm_id], references: [id], onDelete: Cascade)
 
-  @@id([roomId, alarmId])
+  @@id([room_id, alarm_id])
 }
 
 model Alarm {
-  id         String      @id @default(uuid())
-  time       String //HH:mm
-  label      String      @default("")
-  enable     Boolean     @default(true)
-  repeat     String[]    @default([])
-  userId     String
-  createdBy  User        @relation(fields: [userId], references: [id])
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  roomAlarms RoomAlarm[]
+  id          String      @id @default(uuid())
+  time        String //HH:mm
+  label       String      @default("")
+  enable      Boolean     @default(true)
+  repeat      String[]    @default([])
+  user_id     String
+  created_by  User        @relation(fields: [user_id], references: [id])
+  created_at  DateTime    @default(now())
+  updated_at  DateTime    @updatedAt
+  room_alarms RoomAlarm[]
 }
 
 model RoomTimer {
-  roomId  String
-  timerId String
-  room    Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  timer   Timer  @relation(fields: [timerId], references: [id], onDelete: Cascade)
+  room_id  String
+  timer_id String
+  room     Room   @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  timer    Timer  @relation(fields: [timer_id], references: [id], onDelete: Cascade)
 
-  @@id([roomId, timerId])
+  @@id([room_id, timer_id])
 }
 
 model Timer {
-  id            String      @id @default(uuid())
-  time          String //HH:mm:ss
-  remainingTime Int? //(milliseconds)
-  label         String      @default("")
-  status        String      @default("running") // pause | running 
-  createdAt     DateTime    @default(now())
-  userId        String
-  createdBy     User        @relation(fields: [userId], references: [id])
-  roomTimers    RoomTimer[]
+  id             String      @id @default(uuid())
+  time           String //HH:mm:ss
+  remaining_time Int? //(milliseconds)
+  label          String      @default("")
+  status         String      @default("running") // pause | running 
+  created_at     DateTime    @default(now())
+  user_id        String
+  created_by     User        @relation(fields: [user_id], references: [id])
+  room_timers    RoomTimer[]
 }

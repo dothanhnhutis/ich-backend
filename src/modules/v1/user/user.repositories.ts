@@ -28,7 +28,7 @@ export default class RoleRepositories {
         email,
       },
       include: {
-        userRoles: {
+        user_roles: {
           select: {
             role: true,
           },
@@ -40,13 +40,13 @@ export default class RoleRepositories {
       // const afterUser = userPublicAttr(user);
 
       if (cache ?? true) {
-        const { userRoles, ...u } = user;
+        const { user_roles, ...u } = user;
         await UserCache.createUserCache(u);
 
         // can kiem tra lai co nen cache user:[userId]:roles
         await UserCache.createRolesOfUser(
           u.id,
-          userRoles.map(({ role }) => role as Role)
+          user_roles.map(({ role }) => role as Role)
         );
       }
       return user;
@@ -74,27 +74,27 @@ export default class RoleRepositories {
     return user;
   }
 
-  static async getMFa(userId: string): Promise<MFA | null> {
+  static async getMFa(user_id: string): Promise<MFA | null> {
     const mfa = await prisma.mFA.findUnique({
-      where: { userId },
+      where: { user_id },
     });
     if (!mfa) return null;
 
     return mfa;
   }
 
-  static async getRoles(userId: string, cache?: boolean) {
+  static async getRoles(user_id: string, cache?: boolean) {
     if (cache ?? true) {
-      const roles = await UserCache.getRolesOfUser(userId);
+      const roles = await UserCache.getRolesOfUser(user_id);
       if (roles) return roles;
     }
 
     const userRoles = await prisma.userRole.findMany({
       where: {
-        userId,
+        user_id,
       },
     });
-    const roleIds = userRoles.map((userRole) => userRole.roleId);
+    const roleIds = userRoles.map((userRole) => userRole.user_id);
 
     const roles = (await prisma.role.findMany({
       where: {
@@ -105,7 +105,7 @@ export default class RoleRepositories {
     })) as Role[];
 
     if (roles && (cache ?? true)) {
-      UserCache.createRolesOfUser(userId, roles);
+      UserCache.createRolesOfUser(user_id, roles);
     }
 
     return roles;

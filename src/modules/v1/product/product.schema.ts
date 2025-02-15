@@ -2,7 +2,7 @@ import * as z from "zod";
 
 export const createProductSchema = z.object({
   body: z.object({
-    pro_name: z.string({
+    prod_name: z.string({
       invalid_type_error: "Tên sản phẩm phải là chuỗi",
       required_error: "Tên sản phẩm là bắt buộc",
     }),
@@ -25,7 +25,7 @@ export const updateProductSchema = z.object({
   }),
   body: z
     .object({
-      pro_name: z.string({
+      prod_name: z.string({
         invalid_type_error: "Tên sản phẩm phải là chuỗi",
       }),
       images: z.array(z.string().url("Hình sản phẩm phải là url"), {
@@ -50,6 +50,6 @@ export type UpdateProduct = UpdateProductReq["body"];
 
 export type Product = CreateProductReq["body"] & {
   id: string;
-  createdAt: Date;
-  updatedAt: Date;
+  created_at: Date;
+  updated_at: Date;
 };

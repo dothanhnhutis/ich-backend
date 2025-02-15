@@ -8,7 +8,7 @@ export class DisplayOrderProductCache {
   static async store(data: DisplayOrderProduct) {
     try {
       await cache.set(
-        `displayOrder:${data.displayOrderId}:product:${data.id}`,
+        `displayOrder:${data.display_order_id}:product:${data.id}`,
         JSON.stringify(data),
         "EX",
         CACHE_TTL

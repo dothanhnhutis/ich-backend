@@ -62,18 +62,24 @@ export default class UserControllers {
   }
 
   static async currentUser(req: Request, res: Response) {
-    const { passwordHash, ...noPass } = req.user!;
+    const { password_hash, ...noPass } = req.user!;
+
     return res.status(StatusCodes.OK).json({
       status: StatusCodes.OK,
       success: true,
       message: "",
-      data: { ...noPass, hasPassword: !!passwordHash },
+      data: {
+        ...noPass,
+        has_password: !!password_hash,
+        roles: req.roles,
+        session: req.sessionData,
+      },
     });
   }
 
   static async signOut(req: Request, res: Response) {
     if (req.sessionData)
-      await UserServices.signOut(req.sessionData.userId, req.sessionData.id);
+      await UserServices.signOut(req.sessionData.user_id, req.sessionData.id);
     res
       .status(StatusCodes.OK)
       .clearCookie(env.SESSION_KEY_NAME)

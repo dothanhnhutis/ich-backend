@@ -46,16 +46,16 @@ async function initDB() {
   await prisma.user.create({
     data: {
       email: "dothanhnhutis@gmail.com",
-      passwordHash: await hashData("@Abc123123"),
+      password_hash: await hashData("@Abc123123"),
       name: "Thanh Nhựt",
-      birthDate: "09/10/1999",
+      birth_date: "09/10/1999",
       gender: "MALE",
-      phoneNumber: "0948548844",
-      emailVerified: new Date(),
-      userRoles: {
+      phone_number: "0948548844",
+      email_verified: new Date(),
+      user_roles: {
         create: [
           {
-            roleId: superAdminRole.id,
+            role_id: superAdminRole.id,
           },
         ],
       },
@@ -65,16 +65,16 @@ async function initDB() {
   await prisma.user.create({
     data: {
       email: "i.c.h.vietnam2020@gmail.com",
-      passwordHash: await hashData("@Abc123123"),
+      password_hash: await hashData("@Abc123123"),
       name: "ICH",
-      birthDate: "24/12/1989",
+      birth_date: "24/12/1989",
       gender: "MALE",
-      phoneNumber: "0707000004",
-      emailVerified: new Date(),
-      userRoles: {
+      phone_number: "0707000004",
+      email_verified: new Date(),
+      user_roles: {
         create: [
           {
-            roleId: adminRole.id,
+            role_id: adminRole.id,
           },
         ],
       },
@@ -84,16 +84,16 @@ async function initDB() {
   await prisma.user.create({
     data: {
       email: "gaconght001@gmail.com",
-      passwordHash: await hashData("@Abc123123"),
+      password_hash: await hashData("@Abc123123"),
       name: "Nhân viên nhà máy I.C.H",
-      birthDate: "24/12/2020",
+      birth_date: "24/12/2020",
       gender: "MALE",
-      phoneNumber: "0906640464",
-      emailVerified: new Date(),
-      userRoles: {
+      phone_number: "0906640464",
+      email_verified: new Date(),
+      user_roles: {
         create: [
           {
-            roleId: workerRole.id,
+            role_id: workerRole.id,
           },
         ],
       },
@@ -102,8 +102,8 @@ async function initDB() {
 
   const location = await prisma.location.create({
     data: {
-      name: "Công ty TNHH MTV TM Sản Xuất I.C.H",
-      locationType: "Factory",
+      location_name: "Công ty TNHH MTV TM Sản Xuất I.C.H",
+      location_type: "Factory",
       address:
         "Số 159 Nguyễn Đình Chiểu, Khóm 3, Phường 4, Thành phố Sóc Trăng, Tỉnh Sóc Trăng",
     },
@@ -112,12 +112,12 @@ async function initDB() {
   await prisma.room.createMany({
     data: [
       {
-        name: "Phòng 1",
-        locationId: location.id,
+        room_name: "Phòng 1",
+        location_id: location.id,
       },
       {
-        name: "Phòng 2",
-        locationId: location.id,
+        room_name: "Phòng 2",
+        location_id: location.id,
       },
     ],
   });

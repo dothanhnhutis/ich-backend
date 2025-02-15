@@ -30,16 +30,16 @@ type UserGender = "MALE" | "FEMALE" | "OTHER" | null;
 export type User = {
   id: string;
   email: string;
-  emailVerified: Date | null;
+  email_verified: Date | null;
   status: UserStatus;
-  passwordHash: string | null;
+  password_hash: string | null;
   name: string;
-  birthDate: string | null;
+  birth_date: string | null;
   gender: UserGender;
   image: string | null;
-  phoneNumber: string | null;
-  createdAt: Date;
-  updatedAt: Date;
+  phone_number: string | null;
+  created_at: Date;
+  updated_at: Date;
 };
 
 export type UserAttributeFilterProps = User & {
@@ -52,31 +52,31 @@ export type UserAttributeFilterProps = User & {
 };
 
 export type MFA = {
-  userId: string;
-  secretKey: string;
-  lastAccess: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  user_id: string;
+  secret_key: string;
+  last_access: Date;
+  created_at: Date;
+  updated_at: Date;
 };
 
 export type CreateSession = {
-  userId: string;
-  reqInfo: {
+  user_id: string;
+  req_info: {
     ip: string;
-    userAgentRaw: string;
+    user_agent_raw: string;
   };
   cookie?: CookieOptions;
 };
 
 export type SessionData = {
   id: string;
-  userId: string;
+  user_id: string;
   cookie: CookieOptions;
-  reqInfo: {
+  req_info: {
     ip: string;
-    userAgent: UAParser.IResult;
-    userAgentRaw: string;
-    lastAccess: Date;
-    createAt: Date;
+    user_agent: UAParser.IResult;
+    user_agent_raw: string;
+    last_access: Date;
+    create_at: Date;
   };
 };

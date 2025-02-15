@@ -14,7 +14,7 @@ declare global {
 
 const deserializeUser: Middleware = async (req, res, next) => {
   if (!req.sessionData) return next();
-  req.user = await UserRepositories.getUserById(req.sessionData.userId);
+  req.user = await UserRepositories.getUserById(req.sessionData.user_id);
   if (!req.user) {
     req.roles = [];
   } else {

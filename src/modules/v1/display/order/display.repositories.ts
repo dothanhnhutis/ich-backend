@@ -7,7 +7,7 @@ export default class DisplayOrderRepositories {
     data: CreateDisplayOrder,
     storeCache?: boolean
   ) {
-    const { products, roomIds, ...d } = data;
+    const { products, room_ids, ...d } = data;
 
     const displayOrder = await prisma.displayOrder.create({
       data: {
@@ -15,13 +15,13 @@ export default class DisplayOrderRepositories {
         products: {
           create: products,
         },
-        displayOrderRooms: {
-          create: roomIds.map((roomId) => ({ roomId })),
+        display_order_rooms: {
+          create: room_ids.map((room_id) => ({ room_id })),
         },
       },
       include: {
         products: true,
-        displayOrderRooms: {
+        display_order_rooms: {
           select: {
             room: true,
           },
@@ -31,7 +31,7 @@ export default class DisplayOrderRepositories {
 
     const {
       products: productList,
-      displayOrderRooms,
+      display_order_rooms,
       ...newDisplay
     } = displayOrder;
 
@@ -41,7 +41,6 @@ export default class DisplayOrderRepositories {
         await DisplayOrderProductCache.store(product);
       }
     }
-
     return newDisplay;
   }
 
@@ -72,13 +71,13 @@ export default class DisplayOrderRepositories {
   ) {
     const {
       products: productList,
-      displayOrderRooms,
+      display_order_rooms,
       ...deletedDisplay
     } = await prisma.displayOrder.delete({
       where: { id: displayOrderId },
       include: {
         products: true,
-        displayOrderRooms: {
+        display_order_rooms: {
           select: {
             room: true,
           },
