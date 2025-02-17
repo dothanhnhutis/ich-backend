@@ -16,7 +16,7 @@ export const authMiddleware =
       ...props,
     };
 
-    if (newProps.emailVerified && !req.user.emailVerified) {
+    if (newProps.emailVerified && !req.user.email_verified) {
       throw new PermissionError("Tài khoản của bạn chưa xác thực");
     }
 

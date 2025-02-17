@@ -5,19 +5,14 @@ import UAParser from "ua-parser-js";
 export const signInSchema = z.object({
   body: z
     .object({
-      email: z
-        .string({
-          required_error: "Email là trường bắt buộc",
-          invalid_type_error: "Email phải là chuỗi",
-        })
-        .email("Email và mật khẩu không hợp lệ"),
-      password: z
-        .string({
-          required_error: "Mật khẩu là trường bắt buộc",
-          invalid_type_error: "Mật khẩu phải là chuỗi",
-        })
-        .min(8, "Email và mật khẩu không hợp lệ")
-        .max(40, "Email và mật khẩu không hợp lệ"),
+      email: z.string({
+        required_error: "Email là trường bắt buộc",
+        invalid_type_error: "Email phải là chuỗi",
+      }),
+      password: z.string({
+        required_error: "Mật khẩu là trường bắt buộc",
+        invalid_type_error: "Mật khẩu phải là chuỗi",
+      }),
     })
     .strict(),
 });
