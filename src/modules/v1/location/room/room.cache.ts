@@ -24,6 +24,27 @@ export default class RoomCache {
     }
   }
 
+  static async getRoomsOfLocation(locationId: string) {
+    try {
+      const roomKeys = await cache.keys(`locations:${locationId}:rooms:*`);
+      const rooms: Room[] = [];
+      for (const id of roomKeys) {
+        const roomCache = await cache.get(id);
+        if (!roomCache) continue;
+        rooms.push(JSON.parse(roomCache) as Room);
+      }
+      return rooms;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        logger.error(`RoomCache.getRoomsOfLocation() method error: `, error);
+        throw new QueryCacheError(
+          `RoomCache.getRoomsOfLocation() method error: ${error.message}`
+        );
+      }
+      throw error;
+    }
+  }
+
   static async getRoomOfLocation(locationId: string, roomId: string) {
     try {
       const room = await cache.get(`locations:${locationId}:rooms:${roomId}`);

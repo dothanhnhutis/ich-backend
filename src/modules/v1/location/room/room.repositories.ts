@@ -14,7 +14,11 @@ export default class RoomRepositories {
     return room;
   }
 
-  static async getRoomsOfLocation(locationId: string) {
+  static async getRoomsOfLocation(locationId: string, cache?: boolean) {
+    if (cache ?? true) {
+      return await RoomCache.getRoomsOfLocation(locationId);
+    }
+
     return await prisma.room.findMany({
       where: {
         location_id: locationId,
