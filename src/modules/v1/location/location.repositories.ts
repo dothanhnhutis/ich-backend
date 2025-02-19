@@ -1,6 +1,5 @@
 import prisma from "@/shared/db/connect";
 import { CreateLocation, UpdateLocation } from "./location.schema";
-import LocationCache from "./location.cache";
 
 export default class LocationRepositories {
   static async getLocations() {
@@ -12,7 +11,7 @@ export default class LocationRepositories {
     return location;
   }
 
-  static async createLocation(data: CreateLocation, storeCache?: boolean) {
+  static async createLocation(data: CreateLocation) {
     const { room_names, ...locationData } = data;
     const location = await prisma.location.create({
       data: {
@@ -25,35 +24,21 @@ export default class LocationRepositories {
         rooms: true,
       },
     });
-    if (storeCache ?? true) {
-      await LocationCache.store(location);
-    }
+
     return location;
   }
 
-  static async getLocationById(locationId: string, cache?: boolean) {
-    if (cache ?? true) {
-      const locationCache = await LocationCache.getLocationById(locationId);
-      if (locationCache) return locationCache;
-    }
+  static async getLocationById(locationId: string) {
     const location = await prisma.location.findUnique({
       where: { id: locationId },
       include: {
         rooms: true,
       },
     });
-
-    if (location && (cache ?? true)) {
-      await LocationCache.store(location);
-    }
     return location;
   }
 
-  static async updateLocationById(
-    locationId: string,
-    data: UpdateLocation,
-    updateCache?: boolean
-  ) {
+  static async updateLocationById(locationId: string, data: UpdateLocation) {
     const { rooms, ...locationData } = data;
 
     const location = await prisma.$transaction(async (tx) => {
@@ -95,9 +80,6 @@ export default class LocationRepositories {
       });
     });
 
-    if (updateCache ?? true) {
-      await LocationCache.store(location);
-    }
     return location;
   }
 
@@ -115,15 +97,13 @@ export default class LocationRepositories {
     return location.rooms;
   }
 
-  static async deleteLocationById(locationId: string, clearCache?: boolean) {
+  static async deleteLocationById(locationId: string) {
     const location = await prisma.location.delete({
       where: {
         id: locationId,
       },
     });
-    if (clearCache ?? true) {
-      await LocationCache.deleteLocationById(locationId);
-    }
+
     return location;
   }
 }

@@ -1,12 +1,12 @@
 import { CreateDisplayOrder } from "./display.schema";
 import DispalyOrderRepositories from "./display.repositories";
-import RoomRepositories from "@/modules/v1/room/room.repositories";
 import { BadRequestError } from "@/shared/error-handler";
+import RoomRepositories from "@/modules/v1/location/room/room.repositories";
 
 export default class DispalyOrderServices {
   static async createNewDisplayOrder(data: CreateDisplayOrder) {
-    for (const roomId of data.roomIds) {
-      const roomExists = await RoomRepositories.getRoomById(roomId);
+    for (const roomId of data.room_ids) {
+      const roomExists = await RoomRepositories.getRoomOfLocation("", roomId);
       if (!roomExists)
         throw new BadRequestError(
           `Tạo hiển thị đơn hàng thất bại. Lỗi: Mã phòng roomId=${roomId} không tồn tại.`
