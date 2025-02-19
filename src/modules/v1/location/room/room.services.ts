@@ -4,57 +4,71 @@ import { CreateRoom, UpdateRoom } from "./room.schema";
 import { BadRequestError } from "@/shared/error-handler";
 
 export default class RoomServices {
-  static async getRooms() {
-    return await RoomRepositories.getRooms();
+  static async getRoomsOfLocation(locationId: string) {
+    return await RoomRepositories.getRoomsOfLocation(locationId);
   }
 
-  static async getRoomById(roomId: string) {
-    const roomExists = await RoomRepositories.getRoomById(roomId);
-    if (!roomExists) throw new BadRequestError("Phòng không tồn tại");
-    return roomExists;
+  static async getRoomOfLocation(locationId: string, roomId: string) {
+    return await RoomRepositories.getRoomOfLocation(locationId, roomId);
   }
 
-  static async createNewRoom(data: CreateRoom) {
+  static async addRoomToLocation(locationId: string, roomName: string) {
     const locationExist = await LocationRepositories.getLocationById(
-      data.location_id
+      locationId
+    );
+    if (!locationExist) throw new BadRequestError("Địa điểm không tồn tại.");
+    console.log(locationExist);
+
+    const roomNameExists = locationExist.rooms.find(
+      (room) => room.room_name == roomName
+    );
+
+    if (roomNameExists)
+      throw new BadRequestError(
+        `Địa điểm '${locationExist.location_name}' đã có phòng '${roomName}'`
+      );
+
+    return await RoomRepositories.addRoomToLocation({
+      location_id: locationId,
+      room_name: roomName,
+    });
+  }
+
+  static async updateRoomById(
+    locationId: string,
+    roomId: string,
+    data: UpdateRoom
+  ) {
+    const locationExist = await LocationRepositories.getLocationById(
+      locationId
     );
     if (!locationExist) throw new BadRequestError("Địa điểm không tồn tại.");
 
-    const room = await RoomRepositories.getUniqueData(data);
-    if (room)
-      throw new BadRequestError(
-        `Địa điểm '${room.location.location_name}' đã có phòng '${room.room_name}'`
-      );
-    return await RoomRepositories.createNewRoom(data);
-  }
-
-  static async updateRoomById(roomId: string, data: UpdateRoom) {
-    const roomExists = await RoomRepositories.getRoomById(roomId);
+    const roomExists = await RoomRepositories.getRoomOfLocation(
+      locationId,
+      roomId
+    );
     if (!roomExists) throw new BadRequestError("Phòng không tồn tại.");
 
-    const newData: CreateRoom = {
-      room_name: roomExists.room_name,
-      location_id: roomExists.location_id,
-      ...data,
-    };
+    const nameExists = locationExist.rooms
+      .filter((room) => room.id != roomId)
+      .find((room) => room.room_name == data.room_name);
 
-    const room = await RoomRepositories.getUniqueData(newData);
-    if (room) {
-      if (room.id != roomExists.id) {
-        throw new BadRequestError(
-          `Địa điểm '${room.location.location_name}' đã có phòng '${room.room_name}'`
-        );
-      } else {
-        return roomExists;
-      }
+    if (nameExists) {
+      throw new BadRequestError(
+        `Địa điểm '${locationExist.location_name}' đã có phòng '${data.room_name}'`
+      );
     }
 
     return await RoomRepositories.updateRoomById(roomId, data);
   }
 
-  static async deleteRoomById(roomId: string) {
-    const roomExists = await RoomRepositories.getRoomById(roomId);
+  static async deleteRoomOfLocation(locationId: string, roomId: string) {
+    const roomExists = await RoomRepositories.getRoomOfLocation(
+      locationId,
+      roomId
+    );
     if (!roomExists) throw new BadRequestError("Phòng không tồn tại.");
-    return await RoomRepositories.deleteRoomById(roomId);
+    return await RoomRepositories.deleteRoomOfLocation(locationId, roomId);
   }
 }

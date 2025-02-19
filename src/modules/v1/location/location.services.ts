@@ -52,11 +52,29 @@ export default class LocationServices {
         }));
       for (const room of data.rooms) {
         if ("room_id" in room && "room_name" in room) {
-          currentRoom;
+          const roomExist = currentRoom.find(
+            (curr) => curr.room_id == room.room_id
+          );
+          if (!roomExist) throw new BadRequestError("Mã phòng không tồn tại");
+          const oldName = currentRoom
+            .filter(({ room_id }) => room.room_id != room_id)
+            .map(({ room_name }) => room_name);
+
+          if (oldName.includes(room.room_name)) {
+            throw new BadRequestError("Tên phòng đã tồn tại");
+          }
         } else if ("room_id" in room) {
+          const roomExist = currentRoom.find(
+            (curr) => curr.room_id == room.room_id
+          );
+          if (!roomExist) throw new BadRequestError("Mã phòng không tồn tại");
         } else if ("room_name" in room) {
           if (currentRoom.find((room1) => room1.room_name == room.room_name))
-            throw new BadRequestError("");
+            throw new BadRequestError("Tên phòng đã tồn tại");
+          currentRoom.push({
+            room_id: "",
+            room_name: room.room_name,
+          });
         }
       }
     }
@@ -65,6 +83,7 @@ export default class LocationServices {
       locationId,
       data
     );
+
     return location;
   }
 }

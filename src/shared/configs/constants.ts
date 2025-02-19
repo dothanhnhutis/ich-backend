@@ -16,11 +16,11 @@ export const permissions = [
   "edit:location",
   "delete:location",
 
-  "write:room",
-  "read:room:*",
-  "read:room:id",
-  "edit:room",
-  "delete:room",
+  "write:location:room",
+  "read:location:room:*",
+  "read:location:room:id",
+  "edit:location:room",
+  "delete:location:room",
 
   // "write:clock:alarms",
   // "read:clock:alarms",

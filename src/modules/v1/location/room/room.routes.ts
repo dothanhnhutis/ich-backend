@@ -4,16 +4,15 @@ import RoomControllers from "./room.controllers";
 import validateResource from "@/shared/middlewares/validateResource";
 import { createRoomSchema, updateRoomSchema } from "./room.schema";
 
-const router: Router = express.Router();
+const router: Router = express.Router({ mergeParams: true });
 
-router.get("/", authMiddleware(), RoomControllers.getRooms);
-router.get("/:roomId", authMiddleware(), RoomControllers.getRoomById);
+router.get("/", authMiddleware(), RoomControllers.getRoomsOfLocation);
 
 router.post(
   "/",
   authMiddleware(),
   validateResource(createRoomSchema),
-  RoomControllers.createNewRoom
+  RoomControllers.addRoomToLocation
 );
 
 router.put(

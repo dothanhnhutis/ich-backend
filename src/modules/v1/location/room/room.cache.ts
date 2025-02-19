@@ -7,7 +7,12 @@ import { QueryCacheError } from "@/shared/error-handler";
 export default class RoomCache {
   static async store(data: Room) {
     try {
-      await cache.set(`room:${data.id}`, JSON.stringify(data), "EX", CACHE_TTL);
+      await cache.set(
+        `locations:${data.location_id}:rooms:${data.id}`,
+        JSON.stringify(data),
+        "EX",
+        CACHE_TTL
+      );
     } catch (error: unknown) {
       if (error instanceof Error) {
         logger.error(`RoomCache.store() method error: `, error);
@@ -19,29 +24,29 @@ export default class RoomCache {
     }
   }
 
-  static async getRoomById(roomId: string) {
+  static async getRoomOfLocation(locationId: string, roomId: string) {
     try {
-      const room = await cache.get(`room:${roomId}`);
+      const room = await cache.get(`locations:${locationId}:rooms:${roomId}`);
       return room ? (JSON.parse(room) as Room) : null;
     } catch (error: unknown) {
       if (error instanceof Error) {
-        logger.error(`RoomCache.getRoomById() method error: `, error);
+        logger.error(`RoomCache.getRoomOfLocation() method error: `, error);
         throw new QueryCacheError(
-          `RoomCache.getRoomById() method error: ${error.message}`
+          `RoomCache.getRoomOfLocation() method error: ${error.message}`
         );
       }
       throw error;
     }
   }
 
-  static async deleteRoomById(roomId: string) {
+  static async deleteRoomOfLocation(locationId: string, roomId: string) {
     try {
-      await cache.del(`room:${roomId}`);
+      await cache.del(`locations:${locationId}:rooms:${roomId}`);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        logger.error(`RoomCache.deleteRoomById() method error: `, error);
+        logger.error(`RoomCache.deleteRoomOfLocation() method error: `, error);
         throw new QueryCacheError(
-          `RoomCache.deleteRoomById() method error: ${error.message}`
+          `RoomCache.deleteRoomOfLocation() method error: ${error.message}`
         );
       }
       throw error;

@@ -7,7 +7,7 @@ import roomRoutes from "./room/room.routes";
 
 const router: Router = express.Router();
 
-router.use("/:locationId", roomRoutes);
+router.use("/:locationId/rooms", roomRoutes);
 router.get(
   "/:locationId",
   authMiddleware(),

@@ -94,7 +94,8 @@ export default class RoleRepositories {
         user_id,
       },
     });
-    const roleIds = userRoles.map((userRole) => userRole.user_id);
+
+    const roleIds = userRoles.map((userRole) => userRole.role_id);
 
     const roles = (await prisma.role.findMany({
       where: {

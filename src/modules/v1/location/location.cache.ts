@@ -3,6 +3,7 @@ import { Location, StoreLocationCache } from "./location.schema";
 import logger from "@/shared/logger";
 import { cache } from "@/shared/cache/connect";
 import { CACHE_TTL } from "@/shared/configs/constants";
+import { Room } from "./room/room.schema";
 
 export default class LocationCache {
   static async store(data: StoreLocationCache) {
@@ -24,13 +25,25 @@ export default class LocationCache {
     }
   }
 
-  static async getLocationById(
-    locationId: string
-  ): Promise<StoreLocationCache | null> {
+  static async getLocationById(locationId: string) {
     try {
-      const location = await cache.get(`location:${locationId}`);
-      if (!location) return null;
-      return JSON.parse(location) as StoreLocationCache;
+      const locationCache = await cache.get(`locations:${locationId}`);
+      if (!locationCache) return null;
+      const location: Location = JSON.parse(locationCache);
+
+      const roomIds = await cache.keys(`locations:${location.id}:rooms:*`);
+
+      const rooms: Room[] = [];
+      for (const id of roomIds) {
+        const room = await cache.get(id);
+        if (!room) continue;
+        rooms.push(JSON.parse(room) as Room);
+      }
+
+      return {
+        ...location,
+        rooms,
+      } as StoreLocationCache;
     } catch (error: unknown) {
       if (error instanceof Error) {
         logger.error(`LocationCache.getLocationById() method error: `, error);

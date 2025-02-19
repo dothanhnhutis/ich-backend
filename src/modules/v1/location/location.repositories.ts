@@ -56,8 +56,35 @@ export default class LocationRepositories {
   ) {
     const { rooms, ...locationData } = data;
 
-    prisma.$transaction([
-      prisma.location.update({
+    const location = await prisma.$transaction(async (tx) => {
+      if (rooms)
+        for (const room of rooms) {
+          if ("room_id" in room && "room_name" in room) {
+            await tx.room.update({
+              where: {
+                id: room.room_id,
+              },
+              data: {
+                room_name: room.room_name,
+              },
+            });
+          } else if ("room_id" in room) {
+            await tx.room.delete({
+              where: {
+                id: room.room_id,
+              },
+            });
+          } else if ("room_name" in room) {
+            await tx.room.create({
+              data: {
+                location_id: locationId,
+                room_name: room.room_name,
+              },
+            });
+          }
+        }
+
+      return await tx.location.update({
         where: {
           id: locationId,
         },
@@ -65,17 +92,9 @@ export default class LocationRepositories {
         include: {
           rooms: true,
         },
-      }),
-    ]);
-    const location = await prisma.location.update({
-      where: {
-        id: locationId,
-      },
-      data: locationData,
-      include: {
-        rooms: true,
-      },
+      });
     });
+
     if (updateCache ?? true) {
       await LocationCache.store(location);
     }

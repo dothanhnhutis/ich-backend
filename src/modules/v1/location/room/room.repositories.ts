@@ -4,7 +4,7 @@ import prisma from "@/shared/db/connect";
 import RoomCache from "./room.cache";
 
 export default class RoomRepositories {
-  static async createNewRoom(data: CreateRoom, storeCache?: boolean) {
+  static async addRoomToLocation(data: CreateRoom, storeCache?: boolean) {
     const room = await prisma.room.create({
       data,
     });
@@ -14,39 +14,31 @@ export default class RoomRepositories {
     return room;
   }
 
-  static async getUniqueData(data: CreateRoom) {
+  static async getRoomsOfLocation(locationId: string) {
+    return await prisma.room.findMany({
+      where: {
+        location_id: locationId,
+      },
+    });
+  }
+
+  static async getRoomOfLocation(
+    locationId: string,
+    roomId: string,
+    cache?: boolean
+  ) {
     const room = await prisma.room.findUnique({
       where: {
-        location_id_room_name: data,
-      },
-      include: {
-        location: true,
+        id: roomId,
       },
     });
 
-    return room;
-  }
-
-  static async getRoomById(roomId: string, cache?: boolean) {
-    if (cache ?? true) {
-      const roomCache = await RoomCache.getRoomById(roomId);
-
-      if (roomCache) return roomCache;
-    }
-
-    const room = await prisma.room.findUnique({ where: { id: roomId } });
-
-    if (!room) return null;
-
+    if (!room || locationId != room.location_id) return null;
     if (cache ?? true) {
       await RoomCache.store(room);
     }
 
     return room;
-  }
-
-  static async getRooms() {
-    return await prisma.room.findMany();
   }
 
   static async updateRoomById(
@@ -67,7 +59,11 @@ export default class RoomRepositories {
     return room;
   }
 
-  static async deleteRoomById(roomId: string, clearCache?: boolean) {
+  static async deleteRoomOfLocation(
+    locationId: string,
+    roomId: string,
+    clearCache?: boolean
+  ) {
     const room = await prisma.room.delete({
       where: {
         id: roomId,
@@ -75,7 +71,7 @@ export default class RoomRepositories {
     });
 
     if (clearCache ?? true) {
-      await RoomCache.deleteRoomById(roomId);
+      await RoomCache.deleteRoomOfLocation(locationId, roomId);
     }
 
     return room;
