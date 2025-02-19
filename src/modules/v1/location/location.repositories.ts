@@ -4,16 +4,29 @@ import LocationCache from "./location.cache";
 
 export default class LocationRepositories {
   static async getLocations() {
-    const location = await prisma.location.findMany();
+    const location = await prisma.location.findMany({
+      include: {
+        rooms: true,
+      },
+    });
     return location;
   }
 
   static async createLocation(data: CreateLocation, storeCache?: boolean) {
+    const { room_names, ...locationData } = data;
     const location = await prisma.location.create({
-      data,
+      data: {
+        ...locationData,
+        rooms: {
+          create: room_names.map((room_name) => ({ room_name })),
+        },
+      },
+      include: {
+        rooms: true,
+      },
     });
     if (storeCache ?? true) {
-      await LocationCache.create(location);
+      await LocationCache.store(location);
     }
     return location;
   }
@@ -25,10 +38,13 @@ export default class LocationRepositories {
     }
     const location = await prisma.location.findUnique({
       where: { id: locationId },
+      include: {
+        rooms: true,
+      },
     });
 
     if (location && (cache ?? true)) {
-      await LocationCache.create(location);
+      await LocationCache.store(location);
     }
     return location;
   }
@@ -38,14 +54,30 @@ export default class LocationRepositories {
     data: UpdateLocation,
     updateCache?: boolean
   ) {
+    const { rooms, ...locationData } = data;
+
+    prisma.$transaction([
+      prisma.location.update({
+        where: {
+          id: locationId,
+        },
+        data: locationData,
+        include: {
+          rooms: true,
+        },
+      }),
+    ]);
     const location = await prisma.location.update({
       where: {
         id: locationId,
       },
-      data,
+      data: locationData,
+      include: {
+        rooms: true,
+      },
     });
     if (updateCache ?? true) {
-      await LocationCache.create(location);
+      await LocationCache.store(location);
     }
     return location;
   }

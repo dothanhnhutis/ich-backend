@@ -1,4 +1,4 @@
-import { CreateLocation, UpdateLocation } from "./location.schema";
+import { CreateLocation, Room, UpdateLocation } from "./location.schema";
 import LocationRepositories from "./location.repositories";
 import { BadRequestError } from "@/shared/error-handler";
 
@@ -13,6 +13,12 @@ export default class LocationServices {
     return location;
   }
   static async createLocation(data: CreateLocation) {
+    const { room_names } = data;
+    const uniqueRooms = room_names.filter(
+      (room_name, idx, room_names) => room_names.indexOf(room_name) == idx
+    );
+    if (uniqueRooms.length != room_names.length)
+      throw new BadRequestError("Tên các phòng không được giống nhau");
     return await LocationRepositories.createLocation(data);
   }
 
@@ -37,6 +43,23 @@ export default class LocationServices {
       locationId
     );
     if (!locationExist) throw new BadRequestError("Địa điểm không tồn tại.");
+
+    if (data.rooms) {
+      const currentRoom: { room_id: string; room_name: string }[] =
+        locationExist.rooms.map((room) => ({
+          room_id: room.id,
+          room_name: room.room_name,
+        }));
+      for (const room of data.rooms) {
+        if ("room_id" in room && "room_name" in room) {
+          currentRoom;
+        } else if ("room_id" in room) {
+        } else if ("room_name" in room) {
+          if (currentRoom.find((room1) => room1.room_name == room.room_name))
+            throw new BadRequestError("");
+        }
+      }
+    }
 
     const location = await LocationRepositories.updateLocationById(
       locationId,

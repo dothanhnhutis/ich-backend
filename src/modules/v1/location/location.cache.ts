@@ -1,11 +1,11 @@
 import { QueryCacheError } from "@/shared/error-handler";
-import { Location } from "./location.schema";
+import { Location, StoreLocationCache } from "./location.schema";
 import logger from "@/shared/logger";
 import { cache } from "@/shared/cache/connect";
 import { CACHE_TTL } from "@/shared/configs/constants";
 
 export default class LocationCache {
-  static async create(data: Location) {
+  static async store(data: StoreLocationCache) {
     try {
       await cache.set(
         `location:${data.id}`,
@@ -15,20 +15,22 @@ export default class LocationCache {
       );
     } catch (error: unknown) {
       if (error instanceof Error) {
-        logger.error(`LocationCache.create() method error: `, error);
+        logger.error(`LocationCache.store() method error: `, error);
         throw new QueryCacheError(
-          `LocationCache.create() method error: ${error.message}`
+          `LocationCache.store() method error: ${error.message}`
         );
       }
       throw error;
     }
   }
 
-  static async getLocationById(locationId: string): Promise<Location | null> {
+  static async getLocationById(
+    locationId: string
+  ): Promise<StoreLocationCache | null> {
     try {
       const location = await cache.get(`location:${locationId}`);
       if (!location) return null;
-      return JSON.parse(location) as Location;
+      return JSON.parse(location) as StoreLocationCache;
     } catch (error: unknown) {
       if (error instanceof Error) {
         logger.error(`LocationCache.getLocationById() method error: `, error);
