@@ -5,13 +5,15 @@ import RoomRepositories from "@/modules/v1/location/room/room.repositories";
 
 export default class DispalyOrderServices {
   static async createNewDisplayOrder(data: CreateDisplayOrder) {
-    for (const roomId of data.room_ids) {
-      const roomExists = await RoomRepositories.getRoomOfLocation("", roomId);
-      if (!roomExists)
-        throw new BadRequestError(
-          `Tạo hiển thị đơn hàng thất bại. Lỗi: Mã phòng roomId=${roomId} không tồn tại.`
-        );
-    }
+    const roomNotExists = await DispalyOrderRepositories.checkRoomNotExists(
+      data.room_ids
+    );
+
+    if (roomNotExists)
+      throw new BadRequestError(
+        `Tạo hiển thị đơn hàng thất bại. Lỗi: Mã phòng roomId=${roomNotExists} không tồn tại.`
+      );
+
     const displayOrder = await DispalyOrderRepositories.createNewDisplayOrder(
       data
     );

@@ -20,18 +20,6 @@ export default class RoomRepositories {
     return rooms;
   }
 
-  static async getRoomOfLocation(locationId: string, roomId: string) {
-    const room = await prisma.room.findUnique({
-      where: {
-        id: roomId,
-      },
-    });
-
-    if (!room || locationId != room.location_id) return null;
-
-    return room;
-  }
-
   static async updateRoomById(roomId: string, data: UpdateRoom) {
     const room = await prisma.room.update({
       where: {
@@ -47,6 +35,7 @@ export default class RoomRepositories {
     const room = await prisma.room.delete({
       where: {
         id: roomId,
+        location_id: locationId,
       },
     });
 

@@ -37,6 +37,7 @@ model User {
   accounts       Account[]
   alarms         Alarm[]
   timers         Timer[]
+  images         Image[]
 }
 
 model MFA {
@@ -85,6 +86,21 @@ model Role {
   created_at  DateTime   @default(now())
   updated_at  DateTime   @updatedAt
   user_roles  UserRole[]
+}
+
+model Image {
+  id         String   @id @default(uuid())
+  url        String
+  filename   String
+  size       Int
+  mimeType   String
+  width      Int?
+  height     Int?
+  uploadedAt DateTime @default(now())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
 }
 
 // Facility

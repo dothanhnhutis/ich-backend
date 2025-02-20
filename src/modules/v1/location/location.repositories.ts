@@ -83,20 +83,6 @@ export default class LocationRepositories {
     return location;
   }
 
-  static async getRoomOfLocation(locationId: string) {
-    const location = await prisma.location.findUnique({
-      where: {
-        id: locationId,
-      },
-      include: {
-        rooms: true,
-      },
-    });
-
-    if (!location) return [];
-    return location.rooms;
-  }
-
   static async deleteLocationById(locationId: string) {
     const location = await prisma.location.delete({
       where: {

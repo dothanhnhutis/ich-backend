@@ -3,6 +3,23 @@ import { CreateDisplayOrder } from "./display.schema";
 import { DisplayOrderCache, DisplayOrderProductCache } from "./display.cache";
 
 export default class DisplayOrderRepositories {
+  static async checkRoomNotExists(roomIds: string[]) {
+    const rooms = await prisma.room.findMany({
+      where: {
+        id: {
+          in: roomIds,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+    const idErrs = rooms
+      .map(({ id }) => id)
+      .filter((id) => !roomIds.includes(id));
+    if (idErrs.length == 0) return null;
+    return idErrs[0];
+  }
   static async createNewDisplayOrder(
     data: CreateDisplayOrder,
     storeCache?: boolean

@@ -12,6 +12,7 @@ export default class LocationServices {
     if (!location) throw new BadRequestError("Địa điểm không tồn tại");
     return location;
   }
+
   static async createLocation(data: CreateLocation) {
     const { room_names } = data;
     const uniqueRooms = room_names.filter(
@@ -28,10 +29,9 @@ export default class LocationServices {
     );
     if (!locationExist) throw new BadRequestError("Địa điểm không tồn tại.");
 
-    const rooms = await LocationRepositories.getRoomOfLocation(locationId);
-    if (rooms.length > 0)
+    if (locationExist.rooms.length > 0)
       throw new BadRequestError(
-        `Có ${rooms.length} phòng đang liên kết với địa điểm này. Hint: Xoá các phòng đang liên kết với địa điểm trước khi xoá.`
+        `Có ${locationExist.rooms.length} phòng đang liên kết với địa điểm này. Hint: Xoá các phòng đang liên kết với địa điểm trước khi xoá.`
       );
 
     const location = await LocationRepositories.deleteLocationById(locationId);

@@ -9,7 +9,13 @@ export default class RoomServices {
   }
 
   static async getRoomOfLocation(locationId: string, roomId: string) {
-    return await RoomRepositories.getRoomOfLocation(locationId, roomId);
+    const locationExist = await LocationRepositories.getLocationById(
+      locationId
+    );
+
+    return locationExist
+      ? locationExist.rooms.find((room) => room.id == roomId) || null
+      : null;
   }
 
   static async addRoomToLocation(locationId: string, roomName: string) {
@@ -44,11 +50,8 @@ export default class RoomServices {
     );
     if (!locationExist) throw new BadRequestError("Địa điểm không tồn tại.");
 
-    const roomExists = await RoomRepositories.getRoomOfLocation(
-      locationId,
-      roomId
-    );
-    if (!roomExists) throw new BadRequestError("Phòng không tồn tại.");
+    if (!locationExist.rooms.find((room) => room.id == roomId))
+      throw new BadRequestError("Phòng không tồn tại.");
 
     const nameExists = locationExist.rooms
       .filter((room) => room.id != roomId)
@@ -64,11 +67,15 @@ export default class RoomServices {
   }
 
   static async deleteRoomOfLocation(locationId: string, roomId: string) {
-    const roomExists = await RoomRepositories.getRoomOfLocation(
-      locationId,
-      roomId
+    const locationExist = await LocationRepositories.getLocationById(
+      locationId
     );
-    if (!roomExists) throw new BadRequestError("Phòng không tồn tại.");
+
+    if (
+      !locationExist ||
+      !locationExist.rooms.find((room) => room.id == roomId)
+    )
+      throw new BadRequestError("Phòng không tồn tại.");
     return await RoomRepositories.deleteRoomOfLocation(locationId, roomId);
   }
 }
