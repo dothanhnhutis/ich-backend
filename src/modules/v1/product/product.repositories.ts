@@ -1,24 +1,15 @@
 import prisma from "@/shared/db/connect";
 import { CreateProduct, UpdateProduct } from "./product.schema";
-import ProductCache from "./product.cache";
 
 export default class ProductRepositories {
-  static async createNewProduct(data: CreateProduct, storeCache?: boolean) {
+  static async createNewProduct(data: CreateProduct) {
     const product = await prisma.product.create({
       data,
     });
-    if (storeCache ?? true) {
-      await ProductCache.store(product);
-    }
     return product;
   }
 
-  static async getProductById(productId: string, cache?: boolean) {
-    if (cache ?? true) {
-      const productCache = await ProductCache.getProductById(productId);
-      if (productCache) return productCache;
-    }
-
+  static async getProductById(productId: string) {
     const product = await prisma.product.findUnique({
       where: {
         id: productId,
@@ -26,11 +17,6 @@ export default class ProductRepositories {
     });
 
     if (!product) return null;
-
-    if (cache ?? true) {
-      await ProductCache.store(product);
-    }
-
     return product;
   }
 
@@ -39,36 +25,22 @@ export default class ProductRepositories {
     return products;
   }
 
-  static async updateProductById(
-    productId: string,
-    data: UpdateProduct,
-    updateCache?: boolean
-  ) {
+  static async updateProductById(productId: string, data: UpdateProduct) {
     const product = await prisma.product.update({
       where: {
         id: productId,
       },
       data,
     });
-
-    if (updateCache ?? true) {
-      await ProductCache.store(product);
-    }
-
-    return prisma;
+    return product;
   }
 
-  static async deleteProductById(productId: string, clearCache?: boolean) {
+  static async deleteProductById(productId: string) {
     const product = await prisma.product.delete({
       where: {
         id: productId,
       },
     });
-
-    if (clearCache ?? true) {
-      await ProductCache.deleteProductById(productId);
-    }
-
     return product;
   }
 }

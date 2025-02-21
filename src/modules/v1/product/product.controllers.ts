@@ -32,7 +32,10 @@ export default class ProductControllers {
     res.status(StatusCodes.OK).json({
       status: StatusCodes.OK,
       success: true,
-      message: "",
+      message:
+        products.length == 0
+          ? "Không có kết quả nào"
+          : `Có ${products.length} giá trị từ yêu cầu.`,
       data: products,
     });
   }

@@ -6,6 +6,23 @@ import { StatusCodes } from "http-status-codes";
 import DisplayOrderServices from "./display.services";
 
 export default class DisplayOrderControllers {
+  static async getDisplays(req: Request, res: Response) {
+    if (!hasPermission(req.roles!, "read:display:order:*"))
+      throw new PermissionError();
+
+    const displayOrder = await DisplayOrderServices.getDisplayOrders();
+
+    res.status(StatusCodes.OK).json({
+      status: StatusCodes.OK,
+      success: true,
+      message:
+        displayOrder.length == 0
+          ? "Không có kết quả nào"
+          : `Có ${displayOrder.length} giá trị từ yêu cầu.`,
+      data: displayOrder,
+    });
+  }
+
   static async getDisplayOrderById(
     req: Request<{ displayOrderId: string }>,
     res: Response

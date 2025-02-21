@@ -31,6 +31,11 @@ export default class DispalyOrderServices {
     return displayOrder;
   }
 
+  static async getDisplayOrders() {
+    const displayOrder = await DispalyOrderRepositories.getDisplayOrders();
+    return displayOrder;
+  }
+
   static async deleteDisplayOrder(displayOrderId: string) {
     const displayOrder = await DispalyOrderRepositories.getDisplayOrderById(
       displayOrderId

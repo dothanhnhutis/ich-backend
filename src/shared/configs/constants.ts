@@ -35,12 +35,13 @@ export const permissions = [
   "read:display:order:id",
   "read:display:order:*",
   "write:display:order",
-  "update:display:order",
+  "edit:display:order",
   "delete:display:order",
 
   "read:display:order:product:id",
   "read:display:order:product:*",
-  "update:display:order:product",
+  "write:display:order:product",
+  "edit:display:order:product",
   "delete:display:order:product",
 
   // "write:alarms",

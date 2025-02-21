@@ -10,7 +10,6 @@ export default class ProductServices {
   static async updateProductById(productId: string, data: UpdateProduct) {
     const product = await ProductRepositories.getProductById(productId);
     if (!product) throw new BadRequestError("Sản phẩm không tồn tại");
-
     return await ProductRepositories.updateProductById(productId, data);
   }
 

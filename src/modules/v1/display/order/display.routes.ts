@@ -13,6 +13,7 @@ router.get(
   authMiddleware(),
   DisplayOrderControllers.getDisplayOrderById
 );
+router.get("/", authMiddleware(), DisplayOrderControllers.getDisplays);
 
 router.post(
   "/",
